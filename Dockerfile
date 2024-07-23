@@ -17,15 +17,19 @@ COPY package*.json  ./
 RUN npm install
 
 # Copy the entire app to the container
-COPY . /app/ 
+COPY . ./
 
 # Build the React app 
 RUN npm run build
 
-# Expose the port on which the app will run 
-EXPOSE 3000
+# Use Nginx as the web server to serve the built React.js app
+FROM nginx:1.2.16
 
-# Start the React app
-CMD [ "npm","start" ]
+#Copy the built React.js app to the Nginx default public directory
+COPY --from=build /app/build /usr/share/nginx/html
 
+# Expose the port Nginx is listening on port 80(default)
+EXPOSE 80
 
+# Start Nginx
+CMD [ "nginx","-g","daemon off;" ]
