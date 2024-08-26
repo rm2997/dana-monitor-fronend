@@ -1,6 +1,9 @@
 # Use the official Node.js image as the base image
 FROM docker.arvancloud.ir/node:22-alpine3.19 as build
 
+# Install net-tools
+RUN apt-get install net-tools
+
 # Set the working directory in the container
 WORKDIR /app
 
