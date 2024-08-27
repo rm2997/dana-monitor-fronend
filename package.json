@@ -26,7 +26,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "dev": "webpack --env.ENVIRONMENT=development --config webpack.config.dev.js",
+    "buildprd": "webpack --env.ENVIRONMENT=production --config webpack.config.build.js"
   },
   "eslintConfig": {
     "extends": [
@@ -45,5 +47,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5",
+    "webpack-cli": "^5.1.4"
   }
 }

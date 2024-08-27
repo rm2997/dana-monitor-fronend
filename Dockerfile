@@ -1,26 +1,21 @@
 # Use the official Node.js image as the base image
 FROM docker.arvancloud.ir/node:22-alpine3.19 as build
 
-# Install net-tools
-RUN apt-get install net-tools
-
 # Set the working directory in the container
 WORKDIR /app
 
 # Set env variables 
-ENV REACT_APP_API_URL='http://localhost:4000/api'
-ENV HOSTNAME='Dana-monitor-frontend'
+ENV REACT_APP_API_URL=http://10.0.10.44:4000/api
+ENV HOSTNAME=Dana-monitor-frontend
 # Copy package.json and package-lock.json to the container
 COPY package*.json  ./
 
-# # Install npm
-# RUN apk add --update nodejs npm
-
 # Install dependencies 
-RUN npm install
+RUN npm install --only=prod
 
 # Copy the entire app to the container
 COPY . ./
+COPY .env.production .env
 
 # Build the React app 
 RUN npm run build
@@ -36,3 +31,4 @@ EXPOSE 80
 
 # Start Nginx
 CMD [ "nginx","-g","daemon off;" ]
+
