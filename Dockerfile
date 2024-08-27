@@ -5,7 +5,7 @@ FROM docker.arvancloud.ir/node:22-alpine3.19 as build
 WORKDIR /app
 
 # Set env variables 
-ENV REACT_APP_API_URL=http://10.0.10.44:4000/api
+ENV REACT_APP_API_URL=http://10.2.10.44:4000/api
 ENV HOSTNAME=Dana-monitor-frontend
 # Copy package.json and package-lock.json to the container
 COPY package*.json  ./
