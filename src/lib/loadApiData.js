@@ -1,15 +1,15 @@
-import axios from 'axios';
+import axios from "axios";
+import { fetchConfig } from "../config/config.js";
 
+export async function loadApiData(apiAddress) {
+  // const apiAddress=`${process.env.REACT_APP_API_URL}/GetDanaStatus`;
 
-export async function loadApiData(){        
-  try {  
-    const apiAddress=`${process.env.REACT_APP_API_URL}/GetDanaStatus`;
-    console.log(`address is : ${apiAddress}`);    
-    const {data}=  await axios.get(apiAddress)
-    .then(result=>result);
-    return data;    
+  try {
+    const fullAddress = `${apiAddress}/GetDanaStatus`;
+    console.log(`Waiting for API: ${fullAddress}`);
+    const { data } = await axios.get(fullAddress).then((result) => result);
+    return data;
   } catch (error) {
-    console.log('error getting data from API',error);
+    console.log("Failed to load data from API: ", error.message);
   }
-    
 }
