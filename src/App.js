@@ -18,28 +18,33 @@ function App() {
   const [config, setConfig] = useState({});
 
   useEffect(() => {
-    const loadConfig = async () => {
-      const { REACT_APP_API_URL } = await fetchConfig();
-      setConfig(REACT_APP_API_URL);
-    };
-    loadConfig();
-    fetchData();
+    loadConfig().then(() => {
+      fetchData();
+    });
   }, []);
 
   useEffect(() => {
     if (playing)
       timer = setInterval(() => {
-        fetchData();
+        loadConfig().then(() => {
+          fetchData();
+        });
       }, 30000);
     else clearTimeout(timer);
   }, [playing, config]);
 
-  function fetchData() {
+  const loadConfig = async () => {
+    const { REACT_APP_API_URL } = await fetchConfig();
+    setConfig(REACT_APP_API_URL);
+  };
+
+  const fetchData = async () => {
     setMyChartData(null);
-    loadApiData(config).then((result) => {
+    await loadApiData(config).then((result) => {
       setMyChartData(result);
     });
-  }
+  };
+
   function handelPlaying(newPlaying) {
     setPlaying(newPlaying);
   }
