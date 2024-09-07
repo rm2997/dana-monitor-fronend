@@ -26,9 +26,13 @@ function App() {
   useEffect(() => {
     if (playing)
       timer = setInterval(() => {
-        loadConfig().then(() => {
-          fetchData();
-        });
+        loadConfig()
+          .then(() => {
+            fetchData();
+          })
+          .catch((err) => {
+            console.log(`Error in loadConfig: ${err.message}`);
+          });
       }, 30000);
     else clearTimeout(timer);
   }, [playing, config]);
