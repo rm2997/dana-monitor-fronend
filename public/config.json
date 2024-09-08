@@ -1,8 +1,8 @@
 {
   "development": {
-    "REACT_APP_API_URL": "http://192.168.0.0.:4000/api"
+    "REACT_APP_API_URL": "http://127.0.0.1:4000/api"
   },
   "production": {
-    "REACT_APP_API_URL": "http://172.18.0.2:4000/api"
+    "REACT_APP_API_URL": "http://127.0.0.1:4000/api"
   }
 }
