@@ -3,6 +3,6 @@
     "REACT_APP_API_URL": "http://127.0.0.1:4000/api"
   },
   "production": {
-    "REACT_APP_API_URL": "http://127.0.0.1:4000/api"
+    "REACT_APP_API_URL": "http://10.2.10.44/api"
   }
 }

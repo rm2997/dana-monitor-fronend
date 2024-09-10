@@ -47,7 +47,19 @@ function App() {
   }, [luStatus]);
 
   useEffect(() => {
-    loadApiData();
+    loadApiData("GetDanaStatus").then(
+      loadApiData("GetLuStatus").then(
+        loadApiData("GetPortStatus").then(
+          loadApiData("GetPingStatus").then(
+            loadApiData("GetGateStatus").then(
+              loadApiData("GetHostResponseTimes").then(
+                loadApiData("GetHostTrans")
+              )
+            )
+          )
+        )
+      )
+    );
   }, [apiUrl]);
 
   useEffect(() => {
@@ -75,14 +87,14 @@ function App() {
     }
   };
 
-  const loadApiData = async () => {
+  const loadApiData = async (apiSubject) => {
     try {
       if (apiUrl === "") {
         console.log("API Address is not loaded yet!");
         return;
       }
-      console.log(`Sending request to API: ${apiUrl}/GetDanaStatus`);
-      const response = await fetch(`${apiUrl}/GetDanaStatus`);
+      console.log(`Sending request to API: ${apiUrl}/${apiSubject}`);
+      const response = await fetch(`${apiUrl}/${apiSubject}`);
       if (!response.ok) {
         console.log("Failed to load API data!");
         return;
@@ -90,13 +102,13 @@ function App() {
       const result = await response.json();
 
       //setMyChartData(result);
-      parseReceivedData(result);
+      parseReceivedData(result, apiSubject);
     } catch (err) {
       console.log(`Failed to load API data: ${err}`);
     }
   };
 
-  function parseReceivedData(data) {
+  function parseReceivedData(data, apiSubject) {
     try {
       data.forEach((element) => {
         if (element) {
@@ -125,7 +137,8 @@ function App() {
           if (AllLUCount) tmpLuStatus.AllLUCount = AllLUCount;
           if (FailedLUCount) tmpLuStatus.FailedLUCount = FailedLUCount;
           if (AvailableLUCount) tmpLuStatus.AvailableLUCount = AvailableLUCount;
-          setLuStatus({ ...tmpLuStatus });
+          if (AllLUCount || FailedLUCount || AvailableLUCount)
+            setLuStatus({ ...tmpLuStatus });
 
           if (GateWayName) tmpDanaStatus.GateWayName = GateWayName;
           if (BankName) tmpDanaStatus.BankName = BankName;
@@ -134,7 +147,16 @@ function App() {
           if (DiskSpace) tmpDanaStatus.DiskSpace = DiskSpace;
           if (CpuUsage) tmpDanaStatus.CpuUsage = CpuUsage;
           if (MemoryUsage) tmpDanaStatus.MemoryUsage = MemoryUsage;
-          setDanaStatus({ ...tmpDanaStatus });
+          if (
+            GateWayName ||
+            BankName ||
+            HostIP ||
+            ThreadCount ||
+            DiskSpace ||
+            CpuUsage ||
+            MemoryUsage
+          )
+            setDanaStatus({ ...tmpDanaStatus });
         }
       });
     } catch (err) {
@@ -142,8 +164,26 @@ function App() {
     }
   }
 
-  function handleRefresh() {
-    loadApiData();
+  function handleRefreshTransactions() {
+    loadApiData("GetHostTrans");
+  }
+  function handleRefreshHostResponseTimes() {
+    loadApiData("GetHostResponseTimes");
+  }
+  function handleRefreshLuStatus() {
+    loadApiData("GetLuStatus");
+  }
+  function handleRefreshDanaStatus() {
+    loadApiData("GetDanaStatus");
+  }
+  function handleRefreshPortStatus() {
+    loadApiData("GetPortStatus");
+  }
+  function handleRefreshGateStatus() {
+    loadApiData("GetGateStatus");
+  }
+  function handleRefreshPingStatus() {
+    loadApiData("GetPingStatus");
   }
 
   function handelPlaying(newPlaying) {
@@ -154,7 +194,7 @@ function App() {
       <DrawerMenu
         DanaName={
           danaStatus.BankName + danaStatus.GateWayName !== ""
-            ? danaStatus.BankName + danaStatus.GateWayName
+            ? danaStatus.BankName + "-" + danaStatus.GateWayName
             : "Disconnected"
         }
       >
@@ -162,20 +202,26 @@ function App() {
           <div style={{ width: "70%", margin: "5px" }}>
             <TransactionChart
               dataSet={!responseTimes ? responseTimes : []}
-              handelFetch={(e) => handleRefresh()}
+              handelFetch={(e) => handleRefreshTransactions()}
               handlePlaying={() => handelPlaying(!playing)}
               isPlaying={playing}
               chartLable={"Host"}
             />
           </div>
           <div style={{ width: "30%", margin: "5px" }}>
-            <ResponseTimeChart dataSet={!responseTimes ? responseTimes : []} />
+            <ResponseTimeChart
+              dataSet={!responseTimes ? responseTimes : []}
+              handleFetch={(e) => handleRefreshHostResponseTimes()}
+            />
           </div>
         </div>
 
         <div style={{ display: "flex", flexDirection: "row" }}>
-          <div style={{ width: "35%", margin: "5px" }}>
-            <MyPieChart dataSet={luStatus} />
+          <div style={{ width: "35%", margin: "8px" }}>
+            <MyPieChart
+              dataSet={luStatus}
+              handelFetch={(e) => handleRefreshLuStatus()}
+            />
           </div>
           <Card style={{ width: "25%", margin: "5px" }}>
             <Typography
@@ -185,15 +231,35 @@ function App() {
             >
               Overall Status
             </Typography>
-            <StatusElement label={"Gate Status"} value={gateStatus} />
-            <StatusElement label={"Host Ping"} value={pingStatus} />
-            <StatusElement label={"Host Telnet"} value={portStatus} />
+            <StatusElement
+              label={"Gate Status"}
+              value={gateStatus}
+              handleFetch={(e) => handleRefreshGateStatus()}
+            />
+            <StatusElement
+              label={"Host Ping"}
+              value={pingStatus}
+              handleFetch={(e) => handleRefreshPingStatus()}
+            />
+            <StatusElement
+              label={"Host Telnet"}
+              value={portStatus}
+              handleFetch={(e) => handleRefreshPortStatus()}
+            />
             <StatusElement
               label={`Thread Count: ${danaStatus.ThreadCount}`}
               value={danaStatus.ThreadCount}
+              handleFetch={(e) => handleRefreshDanaStatus()}
             />
           </Card>
-          <Card style={{ width: "40%", margin: "10px" }}>
+          <Card
+            style={{
+              width: "40%",
+              marginBottom: "6px",
+              marginTop: "5px",
+              marginLeft: "5px",
+            }}
+          >
             <MyProgressChart
               value={danaStatus.CpuUsage}
               labelName="Cpu Usage"
@@ -209,7 +275,7 @@ function App() {
           </Card>
         </div>
       </DrawerMenu>
-      {myChartData ? <></> : <FirstLoading />}
+      {danaStatus ? <></> : <FirstLoading />}
     </MainArea>
   );
 }

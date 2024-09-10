@@ -1,8 +1,9 @@
 import * as React from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
-import { Card, Box, Typography } from "@mui/material";
+import { Card, Box, Typography, IconButton } from "@mui/material";
+import LoopSharpIcon from "@mui/icons-material/LoopSharp";
 
-export default function MyPieChart({ dataSet }) {
+export default function MyPieChart({ dataSet, handelFetch }) {
   const usingLuCount = dataSet
     ? dataSet.AllLUCount - (dataSet.AvailableLUCount + dataSet.FailedLUCount)
     : 0;
@@ -35,6 +36,11 @@ export default function MyPieChart({ dataSet }) {
         >
           Lu Status
         </Typography>
+        <Box sx={{ marginLeft: "10px" }}>
+          <IconButton onClick={handelFetch} color="primary">
+            <LoopSharpIcon />
+          </IconButton>
+        </Box>
         <PieChart series={chartSeries} width={400} height={200} />
       </Box>
     </Card>
