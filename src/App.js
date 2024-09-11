@@ -12,6 +12,7 @@ import ResponseTimeChart from "./components/chart/ResponseTimeChart";
 
 let timer = null;
 function App() {
+  const [apiStatus, setApiStatus] = useState(false);
   const [danaStatus, setDanaStatus] = useState({
     GateWayName: "",
     BankName: "",
@@ -30,7 +31,6 @@ function App() {
     AvailableLUCount: 0,
   });
   const [responseTimes, setResponseTimes] = useState(null);
-  const [myChartData, setMyChartData] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [apiUrl, setApiUrl] = useState("");
 
@@ -39,27 +39,27 @@ function App() {
   }, []);
 
   useEffect(() => {
-    console.log("from use Effect for dana status", danaStatus);
-  }, [danaStatus]);
-
-  useEffect(() => {
-    console.log("from use Effect for lu status", luStatus);
-  }, [luStatus]);
-
-  useEffect(() => {
-    loadApiData("GetDanaStatus").then(
-      loadApiData("GetLuStatus").then(
-        loadApiData("GetPortStatus").then(
-          loadApiData("GetPingStatus").then(
-            loadApiData("GetGateStatus").then(
-              loadApiData("GetHostResponseTimes").then(
-                loadApiData("GetHostTrans")
-              )
-            )
-          )
-        )
-      )
-    );
+    const loadAllData = async () => {
+      const [danaSt, luSt, portSt, pingSt, , gateSt, rspSt, trnSt] =
+        await Promise.all([
+          await loadApiData("GetDanaStatus"),
+          await loadApiData("GetLuStatus"),
+          await loadApiData("GetPortStatus"),
+          await loadApiData("GetPingStatus"),
+          await loadApiData("GetGateStatus"),
+          await loadApiData("GetHostResponseTimes"),
+          await loadApiData("GetHostTrans"),
+        ]);
+      if (danaSt) setDanaStatus(danaSt);
+      if (luSt) setLuStatus(luSt);
+      setPortStatus(portSt);
+      setPingStatus(pingSt);
+      setPortStatus(portSt);
+      setGateStatus(gateSt);
+    };
+    loadAllData().then(() => {
+      if (danaStatus) setApiStatus(true);
+    });
   }, [apiUrl]);
 
   useEffect(() => {
@@ -89,6 +89,7 @@ function App() {
 
   const loadApiData = async (apiSubject) => {
     try {
+      setApiStatus(false);
       if (apiUrl === "") {
         console.log("API Address is not loaded yet!");
         return;
@@ -100,17 +101,23 @@ function App() {
         return;
       }
       const result = await response.json();
-
       //setMyChartData(result);
-      parseReceivedData(result, apiSubject);
+      const retval = await parseReceivedData(result, apiSubject).then(
+        (data) => {
+          console.log("retval is :" + data);
+          return data;
+        }
+      );
+
+      return retval;
     } catch (err) {
       console.log(`Failed to load API data: ${err}`);
     }
   };
 
-  function parseReceivedData(data, apiSubject) {
+  const parseReceivedData = async (data, apiSubject) => {
     try {
-      data.forEach((element) => {
+      const retval = await data.map((element) => {
         if (element) {
           const {
             PingStatus,
@@ -127,42 +134,46 @@ function App() {
             CpuUsage,
             MemoryUsage,
           } = JSON.parse(element).Data;
-          const tmpLuStatus = { ...luStatus };
-          const tmpDanaStatus = { ...danaStatus };
 
-          if (PingStatus) setPingStatus(PingStatus);
-          if (GateStatus) setGateStatus(GateStatus);
-          if (PortStatus) setPortStatus(PortStatus);
-
-          if (AllLUCount) tmpLuStatus.AllLUCount = AllLUCount;
-          if (FailedLUCount) tmpLuStatus.FailedLUCount = FailedLUCount;
-          if (AvailableLUCount) tmpLuStatus.AvailableLUCount = AvailableLUCount;
-          if (AllLUCount || FailedLUCount || AvailableLUCount)
-            setLuStatus({ ...tmpLuStatus });
-
-          if (GateWayName) tmpDanaStatus.GateWayName = GateWayName;
-          if (BankName) tmpDanaStatus.BankName = BankName;
-          if (HostIP) tmpDanaStatus.HostIP = HostIP;
-          if (ThreadCount) tmpDanaStatus.ThreadCount = ThreadCount;
-          if (DiskSpace) tmpDanaStatus.DiskSpace = DiskSpace;
-          if (CpuUsage) tmpDanaStatus.CpuUsage = CpuUsage;
-          if (MemoryUsage) tmpDanaStatus.MemoryUsage = MemoryUsage;
-          if (
-            GateWayName ||
-            BankName ||
-            HostIP ||
-            ThreadCount ||
-            DiskSpace ||
-            CpuUsage ||
-            MemoryUsage
-          )
-            setDanaStatus({ ...tmpDanaStatus });
+          switch (apiSubject) {
+            case "GetDanaStatus":
+              const tmpDanaStatus = { ...danaStatus };
+              if (GateWayName) tmpDanaStatus.GateWayName = GateWayName;
+              if (BankName) tmpDanaStatus.BankName = BankName;
+              if (HostIP) tmpDanaStatus.HostIP = HostIP;
+              if (ThreadCount) tmpDanaStatus.ThreadCount = ThreadCount;
+              if (DiskSpace) tmpDanaStatus.DiskSpace = DiskSpace;
+              if (CpuUsage) tmpDanaStatus.CpuUsage = CpuUsage;
+              if (MemoryUsage) tmpDanaStatus.MemoryUsage = MemoryUsage;
+              return { ...tmpDanaStatus };
+            case "GetLuStatus":
+              const tmpLuStatus = { ...luStatus };
+              if (AllLUCount) tmpLuStatus.AllLUCount = AllLUCount;
+              if (FailedLUCount) tmpLuStatus.FailedLUCount = FailedLUCount;
+              if (AvailableLUCount)
+                tmpLuStatus.AvailableLUCount = AvailableLUCount;
+              console.log({ ...tmpLuStatus });
+              return { ...tmpLuStatus };
+            case "GetPingStatus":
+              if (PingStatus) return PingStatus; //setPingStatus(PingStatus);
+              break;
+            case "GetGateStatus":
+              if (GateStatus) return GateStatus; //setGateStatus(GateStatus);
+              break;
+            case "GetPortStatus":
+              if (PortStatus) return PortStatus; //setPortStatus(PortStatus);
+              break;
+            default:
+              break;
+          }
         }
       });
+      return console.log(`retval from parser: ${retval}`);
     } catch (err) {
       console.log(`Error in message parser: ${err}`);
+      return null;
     }
-  }
+  };
 
   function handleRefreshTransactions() {
     loadApiData("GetHostTrans");
@@ -170,20 +181,25 @@ function App() {
   function handleRefreshHostResponseTimes() {
     loadApiData("GetHostResponseTimes");
   }
-  function handleRefreshLuStatus() {
-    loadApiData("GetLuStatus");
+  async function handleRefreshLuStatus() {
+    const data = await loadApiData("GetLuStatus");
+    if (data) setApiStatus(true);
   }
-  function handleRefreshDanaStatus() {
-    loadApiData("GetDanaStatus");
+  async function handleRefreshDanaStatus() {
+    setDanaStatus(await loadApiData("GetDanaStatus"));
+    if (danaStatus) setApiStatus(true);
   }
-  function handleRefreshPortStatus() {
-    loadApiData("GetPortStatus");
+  async function handleRefreshPortStatus() {
+    setPortStatus(await loadApiData("GetPortStatus"));
+    if (portStatus) setApiStatus(true);
   }
-  function handleRefreshGateStatus() {
-    loadApiData("GetGateStatus");
+  async function handleRefreshGateStatus() {
+    setGateStatus(await loadApiData("GetGateStatus"));
+    if (gateStatus) setApiStatus(true);
   }
-  function handleRefreshPingStatus() {
-    loadApiData("GetPingStatus");
+  async function handleRefreshPingStatus() {
+    setPingStatus(await loadApiData("GetPingStatus"));
+    if (pingStatus) setApiStatus(true);
   }
 
   function handelPlaying(newPlaying) {
@@ -275,7 +291,7 @@ function App() {
           </Card>
         </div>
       </DrawerMenu>
-      {danaStatus ? <></> : <FirstLoading />}
+      {apiStatus ? <></> : <FirstLoading />}
     </MainArea>
   );
 }
