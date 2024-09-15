@@ -54,7 +54,7 @@ export default function TransactionChart({
         </Box>
         <ResponsiveChartContainer
           series={chartSeries}
-          dataset={dataSet ? dataSet.transactions : []}
+          dataset={dataSet ? dataSet : []}
           xAxis={[
             {
               scaleType: "band",

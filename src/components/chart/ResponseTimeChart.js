@@ -11,7 +11,7 @@ export default function ResponseTimeChart({ dataSet, handleFetch }) {
   const chartSeries = [
     {
       type: "line",
-      dataKey: "responseTime",
+      dataKey: "ResponseTime",
       label: "Response Time(ms)",
       color: "#F18E31",
     },
