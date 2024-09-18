@@ -1,9 +1,6 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
-import { ResponsiveChartContainer } from "@mui/x-charts/ResponsiveChartContainer";
-import { LinePlot, MarkPlot } from "@mui/x-charts/LineChart";
-import { ChartsXAxis } from "@mui/x-charts/ChartsXAxis";
-import { ChartsLegend, ChartsTooltip, ChartsYAxis } from "@mui/x-charts";
+import { LineChart } from "@mui/x-charts/LineChart";
 import { Card, IconButton, Typography } from "@mui/material";
 import PlayCircleOutlineSharpIcon from "@mui/icons-material/PlayCircleOutlineSharp";
 import PauseCircleOutlineSharpIcon from "@mui/icons-material/PauseCircleOutlineSharp";
@@ -12,39 +9,56 @@ import LoopSharpIcon from "@mui/icons-material/LoopSharp";
 export default function TransactionChart({
   dataSet,
   handelFetch,
+  fetchIsActive,
   chartLable,
   handlePlaying,
   isPlaying,
 }) {
   const chartSeries = [
     {
-      type: "line",
+      baseline: "max",
       dataKey: `to${chartLable}`,
       label: `To ${chartLable}`,
-      color: "#55C306",
+      color: "#52be80",
+      showMark: false,
+      curve: "catmullRom",
     },
     {
-      type: "line",
+      baseline: "max",
       dataKey: `from${chartLable}`,
       label: `From ${chartLable}`,
-      color: "#F1244F",
+      color: "#e74c3c",
+      showMark: false,
+      curve: "catmullRom",
     },
   ];
+
   return (
     <Card sx={{ width: "100%", display: "inline-flex" }}>
       <Box sx={{ width: "100%" }}>
         <Typography
           variant="h6"
-          gutterBottom
-          sx={{ textAlign: "center", margin: "10px auto" }}
+          sx={{
+            textAlign: "center",
+            backgroundColor: "aliceblue",
+          }}
         >
           {chartLable} Transaction Status
         </Typography>
         <Box sx={{ marginLeft: "10px" }}>
-          <IconButton onClick={handelFetch} color="primary">
+          <IconButton
+            onClick={handelFetch}
+            color="primary"
+            disabled={fetchIsActive}
+            title="Refresh"
+          >
             <LoopSharpIcon />
           </IconButton>
-          <IconButton onClick={handlePlaying} color="primary">
+          <IconButton
+            onClick={handlePlaying}
+            color="primary"
+            title="Auto Refresh|Pause"
+          >
             {isPlaying ? (
               <PauseCircleOutlineSharpIcon />
             ) : (
@@ -52,24 +66,20 @@ export default function TransactionChart({
             )}
           </IconButton>
         </Box>
-        <ResponsiveChartContainer
+        <LineChart
           series={chartSeries}
           dataset={dataSet ? dataSet : []}
           xAxis={[
             {
-              scaleType: "band",
+              tickInterval: (value, index) =>
+                value.toString().substring(3) === "00" ? true : false,
+              scaleType: "point",
               dataKey: "time",
             },
           ]}
-          height={410}
-        >
-          <ChartsLegend />
-          <LinePlot />
-          <MarkPlot />
-          <ChartsTooltip />
-          <ChartsXAxis label="Time" />
-          <ChartsYAxis label="Count" />
-        </ResponsiveChartContainer>
+          height={350}
+          margin={{ left: 55, right: 30, top: 30, bottom: 55 }}
+        ></LineChart>
       </Box>
     </Card>
   );

@@ -1,54 +1,61 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
-import { ResponsiveChartContainer } from "@mui/x-charts/ResponsiveChartContainer";
-import { LinePlot, MarkPlot } from "@mui/x-charts/LineChart";
-import { ChartsXAxis } from "@mui/x-charts/ChartsXAxis";
-import { ChartsLegend, ChartsTooltip, ChartsYAxis } from "@mui/x-charts";
+import { LineChart } from "@mui/x-charts/LineChart";
 import { Card, IconButton, Typography } from "@mui/material";
 import LoopSharpIcon from "@mui/icons-material/LoopSharp";
 
-export default function ResponseTimeChart({ dataSet, handleFetch }) {
+export default function ResponseTimeChart({
+  dataSet,
+  handleFetch,
+  fetchIsActive,
+}) {
   const chartSeries = [
     {
-      type: "line",
+      baseline: "max",
+      scaleType: "time",
       dataKey: "ResponseTime",
       label: "Response Time(ms)",
-      color: "#F18E31",
+      color: "#FF9100",
+      showMark: false,
+      curve: "catmullRom",
     },
   ];
+
   return (
     <Card sx={{ width: "100%", display: "inline-flex" }}>
       <Box sx={{ width: "100%" }}>
         <Typography
           variant="h6"
-          gutterBottom
-          sx={{ textAlign: "center", margin: "10px auto" }}
+          sx={{ textAlign: "center", backgroundColor: "aliceblue" }}
         >
           Host Response Time
         </Typography>
         <Box sx={{ marginLeft: "10px" }}>
-          <IconButton onClick={handleFetch} color="primary">
+          <IconButton
+            onClick={handleFetch}
+            color="primary"
+            disabled={fetchIsActive}
+            title="Refresh"
+          >
             <LoopSharpIcon />
           </IconButton>
         </Box>
-        <ResponsiveChartContainer
+        <LineChart
           series={chartSeries}
+          grid={{ horizontal: true }}
+          backgroundColor={{ fill: "transparent" }}
           dataset={dataSet ? dataSet : []}
           xAxis={[
             {
-              scaleType: "band",
+              scaleType: "point",
               dataKey: "time",
+              tickInterval: (value, index) =>
+                value.toString().substring(3) === "00" ? true : false,
             },
           ]}
-          height={410}
-        >
-          <ChartsLegend />
-          <LinePlot />
-          <MarkPlot />
-          <ChartsTooltip />
-          <ChartsXAxis label="Time" />
-          <ChartsYAxis label="Response" />
-        </ResponsiveChartContainer>
+          height={350}
+          margin={{ left: 60, right: 30, top: 30, bottom: 40 }}
+        ></LineChart>
       </Box>
     </Card>
   );
