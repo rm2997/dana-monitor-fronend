@@ -52,7 +52,7 @@ export default function OverallStatus({
             title="Close Dana gate!"
             color={"error"}
             onClick={handleCloseDanaGate}
-            disabled={fetchIsActive && gateStatus}
+            disabled={fetchIsActive || !gateStatus}
           >
             <Lock />
           </IconButton>

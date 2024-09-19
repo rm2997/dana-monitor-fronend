@@ -11,11 +11,11 @@ export const loadApiData = async (apiUrl, apiSubject, ...status) => {
       return;
     }
     const result = await response.json();
-
+    console.log(`rest argument is : ${status}`);
     const retval = await parseReceivedData(result, apiSubject, {
       ...status,
     }).then((data) => data);
-
+    console.log(retval);
     return retval;
   } catch (err) {
     console.log(`Failed to load API data: ${err}`);
@@ -24,6 +24,7 @@ export const loadApiData = async (apiUrl, apiSubject, ...status) => {
 
 const parseReceivedData = async (data, apiSubject, ...status) => {
   try {
+    console.log(`Rest argument in parser is: ${status}`);
     if (!data) return null;
     const parsedData = JSON.parse(data);
     const {
@@ -57,6 +58,7 @@ const parseReceivedData = async (data, apiSubject, ...status) => {
       case "GetLuStatus":
         const { luStatus } = status;
         const tmpLuStatus = { ...luStatus };
+        console.log(`current lu status: ${tmpLuStatus}`);
         if (AllLUCount) tmpLuStatus.AllLUCount = AllLUCount;
         if (FailedLUCount) tmpLuStatus.FailedLUCount = FailedLUCount;
         if (AvailableLUCount) tmpLuStatus.AvailableLUCount = AvailableLUCount;
@@ -65,10 +67,12 @@ const parseReceivedData = async (data, apiSubject, ...status) => {
         if (PingStatus) return PingStatus;
         break;
       case "GetGateStatus":
-        if (GateStatus) return GateStatus;
+        console.log(`current gate status: ${GateStatus}`);
+        if (GateStatus !== null && GateStatus !== undefined) return GateStatus;
         break;
       case "GetPortStatus":
-        if (PortStatus) return PortStatus;
+        console.log(`current port status: ${PortStatus}`);
+        if (PortStatus !== null && PortStatus !== undefined) return PortStatus;
         break;
       case "OpenGate":
         if (parsedData.Data) return parsedData.Data.Gate;
