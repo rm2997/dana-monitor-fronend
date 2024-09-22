@@ -53,8 +53,8 @@ export default function ResponseTimeChart({
                 value.toString().substring(3) === "00" ? true : false,
             },
           ]}
-          height={350}
-          margin={{ left: 60, right: 30, top: 30, bottom: 40 }}
+          height={220}
+          margin={{ left: 60, right: 30 }}
         ></LineChart>
       </Box>
     </Card>

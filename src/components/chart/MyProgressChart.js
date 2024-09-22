@@ -11,15 +11,21 @@ export default function MyProgressChart(props) {
         {props.labelName}
       </Typography>
       <Box sx={{ display: "flex", alignItems: "center" }}>
-        <Box sx={{ width: "90%", margin: "13px" }}>
+        <Box sx={{ width: "90%" }}>
           <LinearProgress
             variant="determinate"
             {...props}
-            sx={{ height: "17px", borderRadius: "10px" }}
+            sx={{
+              height: "17px",
+              borderRadius: "10px",
+              marginLeft: "10px",
+              marginTop: "10px",
+              marginBottom: "23px",
+            }}
             color={value > 50 ? (value > 75 ? "error" : "warning") : "success"}
           />
         </Box>
-        <Box sx={{ minWidth: 35 }}>
+        <Box sx={{ marginLeft: "5px" }}>
           <Typography variant="body2" color="text.primary">{`${Math.round(
             value
           )}%`}</Typography>

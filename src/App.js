@@ -3,10 +3,10 @@ import DrawerMenu from "./components/drawer_menu/DrawerMenu";
 import TransactionChart from "./components/chart/TransactionChart";
 import MyPieChart from "./components/chart/MyPieChart";
 import { useEffect, useState } from "react";
-import { Alert, Card, LinearProgress, Snackbar } from "@mui/material";
+import { Alert, LinearProgress, Snackbar } from "@mui/material";
 import ResponseTimeChart from "./components/chart/ResponseTimeChart";
 import ApiLoading from "./components/progress/ApiLoading";
-import OverallStatus from "./components/status_element/OverallStatus";
+
 import ServerStatus from "./components/status_element/ServerStatus";
 import { loadConfig } from "./services/configService";
 import { loadApiData } from "./services/apiService";
@@ -23,6 +23,8 @@ function App() {
     CpuUsage: 0,
     MemoryUsage: 0,
   });
+
+  const [activeSteps, setActiveSteps] = useState(0);
   const [portStatus, setPortStatus] = useState(false);
   const [pingStatus, setPingStatus] = useState(false);
   const [gateStatus, setGateStatus] = useState(false);
@@ -63,27 +65,6 @@ function App() {
     else clearTimeout(timer);
   }, [playing, apiUrl]);
 
-  const initDanaMonitor = async function () {
-    setDanaStatus({
-      GateWayName: "",
-      BankName: "",
-      HostIP: "",
-      ThreadCount: 0,
-      DiskSpace: 0,
-      CpuUsage: 0,
-      MemoryUsage: 0,
-    });
-    setPortStatus(false);
-    setPingStatus(false);
-    setGateStatus(false);
-    setLuStatus({
-      AllLUCount: 0,
-      FailedLUCount: 0,
-      AvailableLUCount: 0,
-    });
-    setApiProgress(0);
-    setApiStatus(false);
-  };
   const getAllEndpointsData = async (firstUse = false) => {
     if (!firstUse) setApiProgress(1);
     setApiStatus(false);
@@ -95,17 +76,23 @@ function App() {
     data = await loadApiData(apiUrl, "GetLuStatus", luStatus);
     if (data) setLuStatus(data);
 
-    if (!firstUse) setApiProgress(30);
-    data = await loadApiData(apiUrl, "GetPortStatus");
-    if (data) setPortStatus(data);
-
     if (!firstUse) setApiProgress(35);
     data = await loadApiData(apiUrl, "GetPingStatus");
     if (data) setPingStatus(data);
+    if (pingStatus) setActiveSteps(1);
+    else setActiveSteps(0);
+
+    if (!firstUse) setApiProgress(30);
+    data = await loadApiData(apiUrl, "GetPortStatus");
+    if (data) setPortStatus(data);
+    if (portStatus) setActiveSteps(2);
+    else setActiveSteps(1);
 
     if (!firstUse) setApiProgress(45);
     data = await loadApiData(apiUrl, "GetGateStatus");
     if (data) setGateStatus(data);
+    if (gateStatus) setActiveSteps(4);
+    else setActiveSteps(3);
 
     if (!firstUse) setApiProgress(60);
     data = await loadApiData(apiUrl, "GetResponseTimes");
@@ -117,10 +104,12 @@ function App() {
 
     setApiProgress(0);
     setApiStatus(true);
+
     if (!firstUse)
       setApiSnackState({
         showSnack: true,
         message: "Getting information from API successfully compeleted",
+        result: true,
       });
   };
   async function handleRefreshTransactions() {
@@ -425,9 +414,7 @@ function App() {
         {apiProgress > 0 && apiStatus === false ? (
           <div
             style={{
-              marginLeft: "10px",
-              marginRight: "12px",
-              marginBottom: "-10px",
+              marginBottom: "5px",
             }}
           >
             <LinearProgress
@@ -439,9 +426,19 @@ function App() {
         ) : (
           <></>
         )}
-        <div>
-          <div style={{ margin: "5px", display: "flex", flexDirection: "row" }}>
-            <div style={{ width: "70%", margin: "5px" }}>
+        <div style={{ marginBottom: "10px" }}>
+          <StatusStepper activeStep={activeSteps} />
+        </div>
+        <div style={{ display: "flex", flexDirection: "row", width: "100%" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              width: "65vw",
+              marginRight: "10px",
+            }}
+          >
+            <div style={{ marginBottom: "10px" }}>
               <TransactionChart
                 dataSet={transactions}
                 handelFetch={(e) => handleRefreshTransactions()}
@@ -451,7 +448,7 @@ function App() {
                 fetchIsActive={!apiStatus}
               />
             </div>
-            <div style={{ width: "30%", margin: "5px" }}>
+            <div style={{ marginBottom: "10px" }}>
               <ResponseTimeChart
                 dataSet={responseTimes}
                 handleFetch={(e) => handleRefreshHostResponseTimes()}
@@ -459,8 +456,15 @@ function App() {
               />
             </div>
           </div>
-          <div style={{ display: "flex", flexDirection: "row" }}>
-            <div style={{ width: "25%", margin: "8px" }}>
+          <div
+            style={{
+              width: "28vw",
+              marginLeft: "10px",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div style={{ marginBottom: "10px" }}>
               <MyPieChart
                 dataSet={luStatus}
                 handleFetch={(e) => handleRefreshLuStatus()}
@@ -469,7 +473,18 @@ function App() {
                 handleReconnectLUs={(e) => handleReconnectLUs()}
               />
             </div>
-            <div style={{ width: "20%", margin: "8px" }}>
+            <div style={{ marginBottom: "10px" }}>
+              <ServerStatus
+                handleBackupDb={handleBackupDb}
+                handleBackupLogs={handleBackupLogs}
+                handleRotateTable={handleRotateTable}
+                fetchIsActive={!apiStatus}
+                memoryUsage={danaStatus.MemoryUsage}
+                cpuUsage={danaStatus.CpuUsage}
+                diskSpace={danaStatus.DiskSpace}
+              ></ServerStatus>
+            </div>
+            {/* <div style={{ marginTop: "7px" }}>
               <OverallStatus
                 portStatus={portStatus}
                 gateStatus={gateStatus}
@@ -483,40 +498,23 @@ function App() {
                 handleCloseDanaGate={handleCloseDanaGate}
                 handleOpenDanaGate={handleOpenDanaGate}
               ></OverallStatus>
-            </div>
-            <div style={{ width: "30%", margin: "8px" }}>
-              <ServerStatus
-                handleBackupDb={handleBackupDb}
-                handleBackupLogs={handleBackupLogs}
-                handleRotateTable={handleRotateTable}
-                fetchIsActive={!apiStatus}
-                memoryUsage={danaStatus.MemoryUsage}
-                cpuUsage={danaStatus.CpuUsage}
-                diskSpace={danaStatus.DiskSpace}
-              ></ServerStatus>
-            </div>
-            <div style={{ width: "25%", margin: "auto" }}>
-              <StatusStepper />
-            </div>
-          </div>
-          <div style={{ width: "90%", display: "block" }}>
-            <Snackbar
-              autoHideDuration={6000}
-              open={apiSnackState.showSnack}
-              onClose={handleCloseSnack}
-            >
-              <Alert
-                severity={apiSnackState.result ? "success" : "error"}
-                variant="filled"
-                sx={{ width: "100%" }}
-                onClose={handleCloseSnack}
-              >
-                {apiSnackState.message}
-              </Alert>
-            </Snackbar>
+            </div> */}
           </div>
         </div>
       </DrawerMenu>
+      <Snackbar
+        autoHideDuration={6000}
+        open={apiSnackState.showSnack}
+        onClose={handleCloseSnack}
+      >
+        <Alert
+          severity={apiSnackState.result ? "success" : "error"}
+          variant="filled"
+          onClose={handleCloseSnack}
+        >
+          {apiSnackState.message}
+        </Alert>
+      </Snackbar>
       {apiStatus === false && apiProgress === 0 ? (
         <ApiLoading progress={apiProgress} />
       ) : (

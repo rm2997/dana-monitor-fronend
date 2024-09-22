@@ -76,12 +76,14 @@ export default function MyPieChart({
             <PublishedWithChangesOutlined />
           </IconButton>
         </Box>
-        <PieChart
-          series={chartSeries}
-          width={400}
-          height={200}
-          sx={{ marginBottom: 1 }}
-        />
+        <Box>
+          <PieChart
+            series={chartSeries}
+            width={380}
+            height={240}
+            sx={{ marginBottom: 1 }}
+          />
+        </Box>
       </Box>
     </Card>
   );

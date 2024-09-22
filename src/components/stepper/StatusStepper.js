@@ -176,10 +176,10 @@ const steps = [
   "Dana gate status",
 ];
 
-export default function StatusStepper() {
+export default function StatusStepper({ activeStep }) {
   return (
-    <Card sx={{ margin: "10px" }}>
-      <Box sx={{ width: "100%", marginBottom: "60px" }}>
+    <Card sx={{ marginTop: "1px", marginBottom: "5px" }}>
+      <Box sx={{ width: "100%", marginBottom: "15px" }}>
         <Typography
           variant="h6"
           sx={{
@@ -191,10 +191,10 @@ export default function StatusStepper() {
           Connection Status
         </Typography>
       </Box>
-      <Stack sx={{ width: "100%", marginBottom: "70px" }} spacing={4}>
+      <Stack sx={{ width: "100%", marginBottom: "15px" }} spacing={4}>
         <Stepper
           alternativeLabel
-          activeStep={4}
+          activeStep={activeStep}
           connector={<ColorlibConnector />}
         >
           {steps.map((label) => (

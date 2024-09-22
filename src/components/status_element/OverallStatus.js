@@ -24,7 +24,6 @@ export default function OverallStatus({
           sx={{
             textAlign: "center",
             backgroundColor: "aliceblue",
-            marginBottom: 3,
           }}
         >
           Overall Status

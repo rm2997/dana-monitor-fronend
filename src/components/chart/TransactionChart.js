@@ -77,8 +77,8 @@ export default function TransactionChart({
               dataKey: "time",
             },
           ]}
-          height={350}
-          margin={{ left: 55, right: 30, top: 30, bottom: 55 }}
+          height={240}
+          margin={{ left: 55, right: 30 }}
         ></LineChart>
       </Box>
     </Card>
