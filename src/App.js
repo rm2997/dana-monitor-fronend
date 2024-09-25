@@ -66,13 +66,18 @@ function App() {
   }, [playing, apiUrl]);
 
   const getAllEndpointsData = async (firstUse = false) => {
-    if (!firstUse) setApiProgress(1);
+    if (!firstUse) setApiProgress(15);
     setApiStatus(false);
 
     let data = await loadApiData(apiUrl, "GetDanaStatus", danaStatus);
-    if (data) setDanaStatus(data);
+    if (data) {
+      setDanaStatus(data);
+      const appTitle = danaStatus.BankName + "-" + danaStatus.GateWayName;
+      console.log(window.name);
+      document.title = "Dana Monitor -" + appTitle;
+    } else document.title = "Dana Monitor - Disconnected";
 
-    if (!firstUse) setApiProgress(15);
+    if (!firstUse) setApiProgress(25);
     data = await loadApiData(apiUrl, "GetLuStatus", luStatus);
     if (data) setLuStatus(data);
 
@@ -82,19 +87,19 @@ function App() {
     if (pingStatus) setActiveSteps(1);
     else setActiveSteps(0);
 
-    if (!firstUse) setApiProgress(30);
+    if (!firstUse) setApiProgress(55);
     data = await loadApiData(apiUrl, "GetPortStatus");
     if (data) setPortStatus(data);
     if (portStatus) setActiveSteps(2);
     else setActiveSteps(1);
 
-    if (!firstUse) setApiProgress(45);
+    if (!firstUse) setApiProgress(65);
     data = await loadApiData(apiUrl, "GetGateStatus");
     if (data) setGateStatus(data);
     if (gateStatus) setActiveSteps(4);
     else setActiveSteps(3);
 
-    if (!firstUse) setApiProgress(60);
+    if (!firstUse) setApiProgress(85);
     data = await loadApiData(apiUrl, "GetResponseTimes");
     if (data) setResponseTimes(data);
 
@@ -434,7 +439,7 @@ function App() {
             style={{
               display: "flex",
               flexDirection: "column",
-              width: "65vw",
+              width: "65%",
               marginRight: "10px",
             }}
           >
@@ -458,7 +463,7 @@ function App() {
           </div>
           <div
             style={{
-              width: "28vw",
+              width: "35%",
               marginLeft: "10px",
               display: "flex",
               flexDirection: "column",
