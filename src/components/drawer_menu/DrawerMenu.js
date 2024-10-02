@@ -122,7 +122,6 @@ export default function DrawerMenu({ children, DanaName }) {
           >
             <MenuIcon />
           </IconButton>
-
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             <img
               src="/Dana_logo.png"

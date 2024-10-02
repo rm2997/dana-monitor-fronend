@@ -6,11 +6,27 @@ import { useEffect, useState } from "react";
 import { Alert, LinearProgress, Snackbar } from "@mui/material";
 import ResponseTimeChart from "./components/chart/ResponseTimeChart";
 import ApiLoading from "./components/progress/ApiLoading";
-
 import ServerStatus from "./components/status_element/ServerStatus";
 import { loadConfig } from "./services/configService";
-import { loadApiData } from "./services/apiService";
+import {
+  sendBackupDbRequest,
+  sendDanaStatusRequest,
+  sendGateStatusRequest,
+  sendHostTransactionRequest,
+  sendLuStatusRequest,
+  sendPingStatusRequest,
+  sendPortStatusRequest,
+  sendResponseTimesRequest,
+  sendCloseGateRequest,
+  sendBackupLogFileRequest,
+  sendAddLuPackRequest,
+  sendOpenGateRequest,
+  sendReconnectLuRequest,
+  sendRotateTableRequest,
+} from "./services/apiService";
 import StatusStepper from "./components/stepper/StatusStepper";
+import { getTokenFromCookie } from "./services/tokenService";
+import Login from "./Login";
 
 let timer = null;
 function App() {
@@ -24,6 +40,7 @@ function App() {
     MemoryUsage: 0,
   });
 
+  const [token, setToken] = useState(null);
   const [activeSteps, setActiveSteps] = useState(0);
   const [portStatus, setPortStatus] = useState(false);
   const [pingStatus, setPingStatus] = useState(false);
@@ -33,8 +50,8 @@ function App() {
     FailedLUCount: 0,
     AvailableLUCount: 0,
   });
-  const [responseTimes, setResponseTimes] = useState(null);
-  const [transactions, setTransactions] = useState(null);
+  const [responseTimes, setResponseTimes] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   const [playing, setPlaying] = useState(false);
   const [apiUrl, setApiUrl] = useState("");
   const [apiProgress, setApiProgress] = useState(0);
@@ -54,8 +71,21 @@ function App() {
   }, []);
 
   useEffect(() => {
-    getAllEndpointsData(true);
+    const getToken = async () => {
+      const tmpToken = await getTokenFromCookie();
+      if (apiUrl) setToken(tmpToken);
+    };
+    getToken();
   }, [apiUrl]);
+
+  useEffect(() => {
+    const fetchApiAllEndPoints = async () => {
+      if (token) {
+        await getAllEndpointsData(true);
+      }
+    };
+    fetchApiAllEndPoints();
+  }, [token]);
 
   useEffect(() => {
     if (playing)
@@ -63,49 +93,53 @@ function App() {
         getAllEndpointsData();
       }, 30000);
     else clearTimeout(timer);
-  }, [playing, apiUrl]);
+  }, [playing]);
 
   const getAllEndpointsData = async (firstUse = false) => {
     if (!firstUse) setApiProgress(15);
     setApiStatus(false);
 
-    let data = await loadApiData(apiUrl, "GetDanaStatus", danaStatus);
+    let data = await sendDanaStatusRequest(`${apiUrl}/GetDanaStatus`, token);
     if (data) {
       setDanaStatus(data);
       const appTitle = danaStatus.BankName + "-" + danaStatus.GateWayName;
-      console.log(window.name);
       document.title = "Dana Monitor -" + appTitle;
     } else document.title = "Dana Monitor - Disconnected";
 
     if (!firstUse) setApiProgress(25);
-    data = await loadApiData(apiUrl, "GetLuStatus", luStatus);
+    data = await sendLuStatusRequest(`${apiUrl}/GetLuStatus`, token);
     if (data) setLuStatus(data);
 
     if (!firstUse) setApiProgress(35);
-    data = await loadApiData(apiUrl, "GetPingStatus");
+    data = await sendPingStatusRequest(`${apiUrl}/GetPingStatus`, token);
     if (data) setPingStatus(data);
     if (pingStatus) setActiveSteps(1);
     else setActiveSteps(0);
 
     if (!firstUse) setApiProgress(55);
-    data = await loadApiData(apiUrl, "GetPortStatus");
+    data = await sendPortStatusRequest(`${apiUrl}/GetPortStatus`, token);
     if (data) setPortStatus(data);
     if (portStatus) setActiveSteps(2);
     else setActiveSteps(1);
 
     if (!firstUse) setApiProgress(65);
-    data = await loadApiData(apiUrl, "GetGateStatus");
+    data = await sendGateStatusRequest(`${apiUrl}/GetGateStatus`, token);
     if (data) setGateStatus(data);
     if (gateStatus) setActiveSteps(4);
     else setActiveSteps(3);
 
     if (!firstUse) setApiProgress(85);
-    data = await loadApiData(apiUrl, "GetResponseTimes");
+    data = await sendResponseTimesRequest(`${apiUrl}/GetResponseTimes`, token);
     if (data) setResponseTimes(data);
+    console.log(responseTimes);
 
     if (!firstUse) setApiProgress(100);
-    data = await loadApiData(apiUrl, "GetHostTransactions");
+    data = await sendHostTransactionRequest(
+      `${apiUrl}/GetHostTransactions`,
+      token
+    );
     if (data) setTransactions(data);
+    console.log(transactions);
 
     setApiProgress(0);
     setApiStatus(true);
@@ -117,10 +151,14 @@ function App() {
         result: true,
       });
   };
+
   async function handleRefreshTransactions() {
     setApiProgress(45);
     setApiStatus(false);
-    const data = await loadApiData(apiUrl, "GetHostTransactions");
+    const data = await sendHostTransactionRequest(
+      `${apiUrl}/GetHostTransactions`,
+      token
+    );
     setApiProgress(75);
     if (data) {
       setTransactions(data);
@@ -141,7 +179,10 @@ function App() {
   async function handleRefreshHostResponseTimes() {
     setApiProgress(45);
     setApiStatus(false);
-    const data = await loadApiData(apiUrl, "GetResponseTimes");
+    const data = await sendResponseTimesRequest(
+      `${apiUrl}/GetResponseTimes`,
+      token
+    );
     setApiProgress(75);
     if (data) {
       setResponseTimes(data);
@@ -162,7 +203,7 @@ function App() {
   async function handleRefreshLuStatus() {
     setApiProgress(30);
     setApiStatus(false);
-    const data = await loadApiData(apiUrl, "GetLuStatus", luStatus);
+    const data = await sendLuStatusRequest(`${apiUrl}/GetLuStatus`, token);
     setApiProgress(85);
     if (data) {
       setLuStatus(data);
@@ -184,7 +225,7 @@ function App() {
     setApiProgress(45);
     setApiStatus(false);
     setApiStatus(false);
-    const data = await loadApiData(apiUrl, "GetDanaStatus", danaStatus);
+    const data = await sendDanaStatusRequest(`${apiUrl}/GetDanaStatus`, token);
     setApiProgress(65);
     if (data) {
       setDanaStatus(data);
@@ -205,7 +246,7 @@ function App() {
   async function handleRefreshPortStatus() {
     setApiProgress(45);
     setApiStatus(false);
-    const data = await loadApiData(apiUrl, "GetPortStatus");
+    const data = await sendPortStatusRequest(`${apiUrl}/GetPortStatus`, token);
     setApiProgress(85);
     if (data !== null && data !== undefined) {
       setPortStatus(data);
@@ -226,7 +267,8 @@ function App() {
   async function handleRefreshGateStatus() {
     setApiProgress(45);
     setApiStatus(false);
-    const data = await loadApiData(apiUrl, "GetGateStatus");
+    //const data = await loadApiData(apiUrl, "GetGateStatus");
+    const data = await sendGateStatusRequest(`${apiUrl}/GetGateStatus`, token);
     setApiProgress(75);
     if (data !== null && data !== undefined) {
       setGateStatus(data);
@@ -247,7 +289,7 @@ function App() {
   async function handleRefreshPingStatus() {
     setApiProgress(45);
     setApiStatus(false);
-    const data = await loadApiData(apiUrl, "GetPingStatus");
+    const data = await sendPingStatusRequest(`${apiUrl}/GetPingStatus`, token);
     setApiProgress(75);
     if (data) {
       setPingStatus(data);
@@ -268,7 +310,7 @@ function App() {
   async function handleAddNewLuPack() {
     setApiProgress(45);
     setApiStatus(false);
-    const data = await loadApiData(apiUrl, "GetLuPack");
+    const data = await sendAddLuPackRequest(`${apiUrl}/GetLuPack`, token);
     if (data) {
       setApiSnackState({
         result: true,
@@ -287,8 +329,7 @@ function App() {
   async function handleCloseDanaGate() {
     setApiProgress(45);
     setApiStatus(false);
-
-    const data = await loadApiData(apiUrl, "CloseGate");
+    const data = await sendCloseGateRequest(`${apiUrl}/CloseGate`, token);
     if (data) {
       setGateStatus(false);
       setApiSnackState({
@@ -308,7 +349,7 @@ function App() {
   async function handleOpenDanaGate() {
     setApiProgress(45);
     setApiStatus(false);
-    const data = await loadApiData(apiUrl, "OpenGate");
+    const data = await sendOpenGateRequest(`${apiUrl}/OpenGate`, token);
     if (data) {
       setApiSnackState({
         result: true,
@@ -327,7 +368,7 @@ function App() {
   async function handleReconnectLUs() {
     setApiProgress(45);
     setApiStatus(false);
-    const data = await loadApiData(apiUrl, "ReconnectLu");
+    const data = await sendReconnectLuRequest(`${apiUrl}/ReconnectLu`, token);
     if (data) {
       setApiSnackState({
         result: true,
@@ -346,7 +387,7 @@ function App() {
   async function handleBackupDb() {
     setApiProgress(45);
     setApiStatus(false);
-    const data = await loadApiData(apiUrl, "BackupDb");
+    const data = await sendBackupDbRequest(`${apiUrl}/BackupDb`, token);
     if (data) {
       setApiSnackState({
         result: true,
@@ -365,7 +406,7 @@ function App() {
   async function handleRotateTable() {
     setApiProgress(45);
     setApiStatus(false);
-    const data = await loadApiData(apiUrl, "RotateTable");
+    const data = await sendRotateTableRequest(`${apiUrl}/RotateTable`, token);
     if (data) {
       setApiSnackState({
         result: true,
@@ -384,7 +425,10 @@ function App() {
   async function handleBackupLogs() {
     setApiProgress(45);
     setApiStatus(false);
-    const data = await loadApiData(apiUrl, "BackupLogFile");
+    const data = await sendBackupLogFileRequest(
+      `${apiUrl}/BackupLogFile`,
+      token
+    );
     if (data) {
       setApiSnackState({
         result: true,
@@ -406,90 +450,91 @@ function App() {
   function handleCloseSnack() {
     setApiSnackState({ showSnack: false, message: "" });
   }
-
-  return (
-    <MainArea>
-      <DrawerMenu
-        DanaName={
-          danaStatus.BankName + danaStatus.GateWayName !== ""
-            ? danaStatus.BankName + "-" + danaStatus.GateWayName
-            : "Disconnected"
-        }
-      >
-        {apiProgress > 0 && apiStatus === false ? (
-          <div
-            style={{
-              marginBottom: "5px",
-            }}
-          >
-            <LinearProgress
-              variant="determinate"
-              color="success"
-              value={apiProgress}
-            />
+  if (!token) return <Login setToken={setToken} apiAddress={apiUrl} />;
+  else
+    return (
+      <MainArea>
+        <DrawerMenu
+          DanaName={
+            danaStatus.BankName + danaStatus.GateWayName !== ""
+              ? danaStatus.BankName + "-" + danaStatus.GateWayName
+              : "Disconnected"
+          }
+        >
+          {apiProgress > 0 && apiStatus === false ? (
+            <div
+              style={{
+                marginBottom: "5px",
+              }}
+            >
+              <LinearProgress
+                variant="determinate"
+                color="success"
+                value={apiProgress}
+              />
+            </div>
+          ) : (
+            <></>
+          )}
+          <div style={{ marginBottom: "10px" }}>
+            <StatusStepper activeStep={activeSteps} />
           </div>
-        ) : (
-          <></>
-        )}
-        <div style={{ marginBottom: "10px" }}>
-          <StatusStepper activeStep={activeSteps} />
-        </div>
-        <div style={{ display: "flex", flexDirection: "row", width: "100%" }}>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              width: "65%",
-              marginRight: "10px",
-            }}
-          >
-            <div style={{ marginBottom: "10px" }}>
-              <TransactionChart
-                dataSet={transactions}
-                handelFetch={(e) => handleRefreshTransactions()}
-                handlePlaying={() => handelPlaying(!playing)}
-                isPlaying={playing}
-                chartLable={"Host"}
-                fetchIsActive={!apiStatus}
-              />
+          <div style={{ display: "flex", flexDirection: "row", width: "100%" }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                width: "65%",
+                marginRight: "10px",
+              }}
+            >
+              <div style={{ marginBottom: "10px" }}>
+                <TransactionChart
+                  dataSet={transactions}
+                  handelFetch={(e) => handleRefreshTransactions()}
+                  handlePlaying={() => handelPlaying(!playing)}
+                  isPlaying={playing}
+                  chartLable={"Host"}
+                  fetchIsActive={!apiStatus}
+                />
+              </div>
+              <div style={{ marginBottom: "10px" }}>
+                <ResponseTimeChart
+                  dataSet={responseTimes}
+                  handleFetch={(e) => handleRefreshHostResponseTimes()}
+                  fetchIsActive={!apiStatus}
+                />
+              </div>
             </div>
-            <div style={{ marginBottom: "10px" }}>
-              <ResponseTimeChart
-                dataSet={responseTimes}
-                handleFetch={(e) => handleRefreshHostResponseTimes()}
-                fetchIsActive={!apiStatus}
-              />
-            </div>
-          </div>
-          <div
-            style={{
-              width: "35%",
-              marginLeft: "10px",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <div style={{ marginBottom: "10px" }}>
-              <MyPieChart
-                dataSet={luStatus}
-                handleFetch={(e) => handleRefreshLuStatus()}
-                fetchIsActive={!apiStatus}
-                handleGetLuPack={(e) => handleAddNewLuPack()}
-                handleReconnectLUs={(e) => handleReconnectLUs()}
-              />
-            </div>
-            <div style={{ marginBottom: "10px" }}>
-              <ServerStatus
-                handleBackupDb={handleBackupDb}
-                handleBackupLogs={handleBackupLogs}
-                handleRotateTable={handleRotateTable}
-                fetchIsActive={!apiStatus}
-                memoryUsage={danaStatus.MemoryUsage}
-                cpuUsage={danaStatus.CpuUsage}
-                diskSpace={danaStatus.DiskSpace}
-              ></ServerStatus>
-            </div>
-            {/* <div style={{ marginTop: "7px" }}>
+            <div
+              style={{
+                width: "35%",
+                marginLeft: "10px",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <div style={{ marginBottom: "10px" }}>
+                <MyPieChart
+                  dataSet={luStatus}
+                  handleFetch={(e) => handleRefreshLuStatus()}
+                  fetchIsActive={!apiStatus}
+                  handleGetLuPack={(e) => handleAddNewLuPack()}
+                  handleReconnectLUs={(e) => handleReconnectLUs()}
+                />
+              </div>
+              <div style={{ marginBottom: "10px" }}>
+                <ServerStatus
+                  handleBackupDb={handleBackupDb}
+                  handleBackupLogs={handleBackupLogs}
+                  handleRotateTable={handleRotateTable}
+                  fetchIsActive={!apiStatus}
+                  memoryUsage={danaStatus.MemoryUsage}
+                  cpuUsage={danaStatus.CpuUsage}
+                  diskSpace={danaStatus.DiskSpace}
+                ></ServerStatus>
+              </div>
+              {/* <div style={{ marginTop: "7px" }}>
               <OverallStatus
                 portStatus={portStatus}
                 gateStatus={gateStatus}
@@ -504,29 +549,29 @@ function App() {
                 handleOpenDanaGate={handleOpenDanaGate}
               ></OverallStatus>
             </div> */}
+            </div>
           </div>
-        </div>
-      </DrawerMenu>
-      <Snackbar
-        autoHideDuration={6000}
-        open={apiSnackState.showSnack}
-        onClose={handleCloseSnack}
-      >
-        <Alert
-          severity={apiSnackState.result ? "success" : "error"}
-          variant="filled"
+        </DrawerMenu>
+        <Snackbar
+          autoHideDuration={6000}
+          open={apiSnackState.showSnack}
           onClose={handleCloseSnack}
         >
-          {apiSnackState.message}
-        </Alert>
-      </Snackbar>
-      {apiStatus === false && apiProgress === 0 ? (
-        <ApiLoading progress={apiProgress} />
-      ) : (
-        <></>
-      )}
-    </MainArea>
-  );
+          <Alert
+            severity={apiSnackState.result ? "success" : "error"}
+            variant="filled"
+            onClose={handleCloseSnack}
+          >
+            {apiSnackState.message}
+          </Alert>
+        </Snackbar>
+        {apiStatus === false && apiProgress === 0 ? (
+          <ApiLoading progress={apiProgress} />
+        ) : (
+          <></>
+        )}
+      </MainArea>
+    );
 }
 
 export default App;
