@@ -13,7 +13,10 @@ import {
 } from "@mui/material";
 
 import React, { useState } from "react";
-import { setTokenToCookie } from "../../services/tokenService";
+import {
+  setTokenToCookie,
+  setTokenToSessionStorage,
+} from "../../services/tokenService";
 import { sendLoginRequest } from "../../services/apiService";
 
 export default function SingIn({ setToken, apiAddress }) {
@@ -46,7 +49,6 @@ export default function SingIn({ setToken, apiAddress }) {
       setPasswordError(false);
       setpasswordErrorMessage("");
     }
-
     return isValid;
   }
 
@@ -56,7 +58,6 @@ export default function SingIn({ setToken, apiAddress }) {
   }
   async function handleSubmit(event) {
     event.preventDefault();
-
     const data = JSON.stringify({
       userName: document.getElementById("txtUserName").value,
       password: document.getElementById("txtPassword").value,
@@ -72,7 +73,8 @@ export default function SingIn({ setToken, apiAddress }) {
       setSnack(true);
     } else {
       setToken(apiResponse.data.access_token);
-      setTokenToCookie(apiResponse.data.access_token);
+      //setTokenToCookie(apiResponse.data.access_token);
+      setTokenToSessionStorage(apiResponse.data.access_token);
     }
   }
 
@@ -93,6 +95,7 @@ export default function SingIn({ setToken, apiAddress }) {
       >
         <Box sx={{ textAlign: "center", marginTop: "20px" }}>
           <img
+            alt="Logo"
             loading="lazy"
             src="/Dana_logo.png"
             style={{ height: "200px", width: "240px" }}

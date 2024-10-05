@@ -228,13 +228,17 @@ export const sendCloseGateRequest = async (closeGateApiAddress, token) => {
   return parsedData.Data;
 };
 
-export const sendApiRequest = async (apiConfig) => {
+export const sendApiRequest = async (apiAddress, method, token, useToken) => {
   try {
-    const response = await axios.request(apiConfig);
+    const config = {
+      method: method,
+      url: `${apiAddress}`,
+    };
+    const response = await axios.request(config);
     return response;
   } catch (error) {
     console.log(
-      `axios request sender: ${error.message} ,Full address: ${apiConfig.url}`
+      `axios request sender: ${error.message} ,Full address: ${apiAddress}`
     );
     return null;
   }

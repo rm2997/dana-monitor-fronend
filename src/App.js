@@ -25,7 +25,10 @@ import {
   sendRotateTableRequest,
 } from "./services/apiService";
 import StatusStepper from "./components/stepper/StatusStepper";
-import { getTokenFromCookie } from "./services/tokenService";
+import {
+  getTokenFromCookie,
+  getTokenFromSessionStorage,
+} from "./services/tokenService";
 import Login from "./Login";
 
 let timer = null;
@@ -72,7 +75,7 @@ function App() {
 
   useEffect(() => {
     const getToken = async () => {
-      const tmpToken = await getTokenFromCookie();
+      const tmpToken = await getTokenFromSessionStorage();
       if (apiUrl) setToken(tmpToken);
     };
     getToken();
