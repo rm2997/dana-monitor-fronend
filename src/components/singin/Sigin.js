@@ -17,7 +17,7 @@ import {
   setTokenToCookie,
   setTokenToSessionStorage,
 } from "../../services/tokenService";
-import { sendLoginRequest } from "../../services/apiService";
+import { sendLoginRequest, setAccessToken } from "../../services/apiService";
 
 export default function SingIn({ setToken, apiAddress }) {
   const [userNameError, setUserNameError] = useState(false);
@@ -73,6 +73,7 @@ export default function SingIn({ setToken, apiAddress }) {
       setSnack(true);
     } else {
       setToken(apiResponse.data.access_token);
+      setAccessToken(apiResponse.data.access_token);
       //setTokenToCookie(apiResponse.data.access_token);
       setTokenToSessionStorage(apiResponse.data.access_token);
     }

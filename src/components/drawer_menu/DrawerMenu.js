@@ -23,8 +23,22 @@ import {
   Typography,
   List,
   ListItemText,
+  Portal,
 } from "@mui/material";
-import { OpenInBrowser } from "@mui/icons-material";
+import {
+  Cable,
+  DoNotDisturbOn,
+  DoNotDisturbOnOutlined,
+  ElectricalServices,
+  LockOpen,
+  Logout,
+  NetworkPing,
+  OpenInBrowser,
+  Padding,
+  PaddingRounded,
+  Settings,
+  Traffic,
+} from "@mui/icons-material";
 
 const drawerWidth = 240;
 
@@ -93,7 +107,17 @@ const Drawer = styled(MuiDrawer, {
   }),
 }));
 
-export default function DrawerMenu({ children, DanaName }) {
+export default function DrawerMenu({
+  children,
+  DanaName,
+  handleCloseDanaGate,
+  handleOpenDanaGate,
+  handleRefreshPingStatus,
+  handleRefreshPortStatus,
+  handleRefreshGateStatus,
+  handleRefreshDanaStatus,
+  handelSignOut,
+}) {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
 
@@ -159,59 +183,212 @@ export default function DrawerMenu({ children, DanaName }) {
         </DrawerHeader>
         <Divider />
         <List>
-          {["Restart Dana", "Stop Dana", "Settings", "Backup"].map(
-            (text, index) => (
-              <ListItem key={text} disablePadding sx={{ display: "block" }}>
-                <ListItemButton
-                  sx={{
-                    minHeight: 48,
-                    justifyContent: open ? "initial" : "center",
-                    px: 2.5,
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{
-                      minWidth: 0,
-                      mr: open ? 3 : "auto",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {index % 2 === 0 ? (
-                      <RestartAltIcon />
-                    ) : (
-                      <HighlightOffIcon />
-                    )}
-                  </ListItemIcon>
-                  <ListItemText primary={text} sx={{ opacity: open ? 1 : 0 }} />
-                </ListItemButton>
-              </ListItem>
-            )
-          )}
+          <ListItem key="Dana" disablePadding sx={{ display: "block" }}>
+            <ListItemButton
+              sx={{
+                minHeight: 48,
+                justifyContent: open ? "initial" : "center",
+                px: 2.5,
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 3 : "auto",
+                  justifyContent: "center",
+                }}
+              >
+                <RestartAltIcon />
+              </ListItemIcon>
+              <ListItemText
+                primary="Restart Dana"
+                sx={{ opacity: open ? 1 : 0 }}
+              />
+            </ListItemButton>
+            <ListItemButton
+              sx={{
+                minHeight: 48,
+                justifyContent: open ? "initial" : "center",
+                px: 2.5,
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 3 : "auto",
+                  justifyContent: "center",
+                }}
+              >
+                <DoNotDisturbOn />
+              </ListItemIcon>
+              <ListItemText
+                primary="Stop Dana"
+                sx={{ opacity: open ? 1 : 0 }}
+              />
+            </ListItemButton>
+            <ListItemButton
+              sx={{
+                minHeight: 48,
+                justifyContent: open ? "initial" : "center",
+                px: 2.5,
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 3 : "auto",
+                  justifyContent: "center",
+                }}
+              >
+                <Settings />
+              </ListItemIcon>
+              <ListItemText primary="Settings" sx={{ opacity: open ? 1 : 0 }} />
+            </ListItemButton>
+          </ListItem>
         </List>
         <Divider />
         <List>
-          {["Ping Host", "Telnet Host", "Sign out"].map((text, index) => (
-            <ListItem key={text} disablePadding sx={{ display: "block" }}>
-              <ListItemButton
+          <ListItem key="Host" disablePadding sx={{ display: "block" }}>
+            <ListItemButton
+              sx={{
+                minHeight: 48,
+                justifyContent: open ? "initial" : "center",
+                px: 2.5,
+              }}
+            >
+              <ListItemIcon
+                onClick={handleRefreshDanaStatus}
                 sx={{
-                  minHeight: 48,
-                  justifyContent: open ? "initial" : "center",
-                  px: 2.5,
+                  minWidth: 0,
+                  mr: open ? 3 : "auto",
+                  justifyContent: "center",
                 }}
               >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 0,
-                    mr: open ? 3 : "auto",
-                    justifyContent: "center",
-                  }}
-                >
-                  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                </ListItemIcon>
-                <ListItemText primary={text} sx={{ opacity: open ? 1 : 0 }} />
-              </ListItemButton>
-            </ListItem>
-          ))}
+                <Cable />
+              </ListItemIcon>
+              <ListItemText
+                onClick={handleRefreshDanaStatus}
+                primary="Dana Status"
+                sx={{ opacity: open ? 1 : 0 }}
+              />
+            </ListItemButton>
+            <ListItemButton
+              sx={{
+                minHeight: 48,
+                justifyContent: open ? "initial" : "center",
+                px: 2.5,
+              }}
+            >
+              <ListItemIcon
+                onClick={handleRefreshPingStatus}
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 3 : "auto",
+                  justifyContent: "center",
+                }}
+              >
+                <NetworkPing />
+              </ListItemIcon>
+              <ListItemText
+                onClick={handleRefreshPingStatus}
+                primary="Ping Host"
+                sx={{ opacity: open ? 1 : 0 }}
+              />
+            </ListItemButton>
+            <ListItemButton
+              sx={{
+                minHeight: 48,
+                justifyContent: open ? "initial" : "center",
+                px: 2.5,
+              }}
+            >
+              <ListItemIcon
+                onClick={handleRefreshPortStatus}
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 3 : "auto",
+                  justifyContent: "center",
+                }}
+              >
+                <ElectricalServices />
+              </ListItemIcon>
+              <ListItemText
+                onClick={handleRefreshPortStatus}
+                primary="Telnet Host"
+                sx={{ opacity: open ? 1 : 0 }}
+              />
+            </ListItemButton>
+            <ListItemButton
+              sx={{
+                minHeight: 48,
+                justifyContent: open ? "initial" : "center",
+                px: 2.5,
+              }}
+            >
+              <ListItemIcon
+                onClick={handleCloseDanaGate}
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 3 : "auto",
+                  justifyContent: "center",
+                }}
+              >
+                <Traffic />
+              </ListItemIcon>
+              <ListItemText
+                onClick={handleCloseDanaGate}
+                primary="Close Gate"
+                sx={{ opacity: open ? 1 : 0 }}
+              />
+            </ListItemButton>
+            <ListItemButton
+              sx={{
+                minHeight: 48,
+                justifyContent: open ? "initial" : "center",
+                px: 2.5,
+              }}
+            >
+              <ListItemIcon
+                onClick={handleOpenDanaGate}
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 3 : "auto",
+                  justifyContent: "center",
+                }}
+              >
+                <LockOpen />
+              </ListItemIcon>
+              <ListItemText
+                onClick={handleOpenDanaGate}
+                primary="Open Gate"
+                sx={{ opacity: open ? 1 : 0 }}
+              />
+            </ListItemButton>
+            <Divider />
+            <ListItemButton
+              sx={{
+                minHeight: 48,
+                justifyContent: open ? "initial" : "center",
+                px: 2.5,
+              }}
+            >
+              <ListItemIcon
+                onClick={handelSignOut}
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 3 : "auto",
+                  justifyContent: "center",
+                }}
+              >
+                <Logout />
+              </ListItemIcon>
+              <ListItemText
+                onClick={handelSignOut}
+                primary="Signout"
+                sx={{ opacity: open ? 1 : 0 }}
+              />
+            </ListItemButton>
+          </ListItem>
         </List>
       </Drawer>
       <Box component="main" sx={{ height: "100vh", flexGrow: 1, p: 3 }}>

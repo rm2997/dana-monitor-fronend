@@ -1,240 +1,140 @@
 import axios from "axios";
+let accessToken = null;
+export const setAccessToken = (token) => {
+  accessToken = token;
+};
 export const sendLoginRequest = async (loginApiAddress, loginData) => {
-  const config = {
-    method: "post",
-    maxBodyLength: Infinity,
-    url: `${loginApiAddress}`,
-    headers: {
-      "Content-Type": "application/json",
-    },
-    data: loginData,
-  };
-  return await sendApiRequest(config);
+  return await sendApiRequest(loginApiAddress, "POST", false, loginData);
 };
 
-export const sendLuStatusRequest = async (luApiAddress, token) => {
-  const config = {
-    method: "get",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    url: `${luApiAddress}`,
-  };
-  const data = await sendApiRequest(config);
+export const sendLuStatusRequest = async (luApiAddress) => {
+  const data = await sendApiRequest(luApiAddress);
   if (!data) return null;
   const parsedData = await JSON.parse(data.data);
   return parsedData.Data;
 };
 
-export const sendAddLuPackRequest = async (newLuApiAddress, token) => {
-  const config = {
-    method: "get",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    url: `${newLuApiAddress}`,
-  };
-  const data = await sendApiRequest(config);
+export const sendAddLuPackRequest = async (newLuApiAddress) => {
+  const data = await sendApiRequest(newLuApiAddress);
   if (!data) return null;
   const parsedData = await JSON.parse(data.data);
   return parsedData.Data.Lucount;
 };
 
-export const sendResponseTimesRequest = async (
-  responseTimesApiAddress,
-  token
-) => {
-  const config = {
-    method: "get",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    url: `${responseTimesApiAddress}`,
-  };
-  const data = await sendApiRequest(config);
+export const sendResponseTimesRequest = async (responseTimesApiAddress) => {
+  const data = await sendApiRequest(responseTimesApiAddress);
   if (!data) return null;
   const parsedData = await JSON.parse(data.data);
   return JSON.parse(parsedData.Data);
 };
 
-export const sendHostTransactionRequest = async (
-  transactionApiAddress,
-  token
-) => {
-  const config = {
-    method: "get",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    url: `${transactionApiAddress}`,
-  };
-  const data = await sendApiRequest(config);
+export const sendHostTransactionRequest = async (transactionApiAddress) => {
+  const data = await sendApiRequest(transactionApiAddress);
   if (!data) return null;
   const parsedData = await JSON.parse(data.data);
   return await JSON.parse(parsedData.Data);
 };
 
-export const sendPingStatusRequest = async (pingApiAddress, token) => {
-  const config = {
-    method: "get",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    url: `${pingApiAddress}`,
-  };
-  const data = await sendApiRequest(config);
+export const sendPingStatusRequest = async (pingApiAddress) => {
+  const data = await sendApiRequest(pingApiAddress);
   if (!data) return null;
   const parsedData = await JSON.parse(data.data);
   return parsedData.Data.PingStatus;
 };
 
-export const sendPortStatusRequest = async (portApiAddress, token) => {
-  const config = {
-    method: "get",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    url: `${portApiAddress}`,
-  };
-  const data = await sendApiRequest(config);
+export const sendPortStatusRequest = async (portApiAddress) => {
+  const data = await sendApiRequest(portApiAddress);
   if (!data) return null;
   const parsedData = await JSON.parse(data.data);
   return parsedData.Data.PortStatus;
 };
 
-export const sendServicesStatusRequest = async (servicesApiAddress, token) => {
-  const config = {
-    method: "get",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    url: `${servicesApiAddress}`,
-  };
-  const data = await sendApiRequest(config);
+export const sendServicesStatusRequest = async (servicesApiAddress) => {
+  const data = await sendApiRequest(servicesApiAddress);
   if (!data) return null;
   const parsedData = await JSON.parse(data.data);
   return parsedData.Data;
 };
 
-export const sendDanaStatusRequest = async (danaApiAddress, token) => {
-  const config = {
-    method: "get",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    url: `${danaApiAddress}`,
-  };
-  const data = await sendApiRequest(config);
+export const sendDanaStatusRequest = async (danaApiAddress) => {
+  const data = await sendApiRequest(danaApiAddress);
   if (!data) return null;
   const parsedData = await JSON.parse(data.data);
   return parsedData.Data;
 };
 
-export const sendGateStatusRequest = async (gateApiAddress, token) => {
-  const config = {
-    method: "get",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    url: `${gateApiAddress}`,
-  };
-  const data = await sendApiRequest(config);
+export const sendGateStatusRequest = async (gateApiAddress) => {
+  const data = await sendApiRequest(gateApiAddress);
   if (!data) return null;
   const parsedData = JSON.parse(data.data);
   return parsedData.Data.GateStatus;
 };
 
-export const sendBackupDbRequest = async (backupApiAddress, token) => {
-  const config = {
-    method: "get",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    url: `${backupApiAddress}`,
-  };
-  const data = await sendApiRequest(config);
+export const sendBackupDbRequest = async (backupApiAddress) => {
+  const data = await sendApiRequest(backupApiAddress);
   if (!data) return null;
   const parsedData = await JSON.parse(data.data);
   return parsedData.Data.DbBackup;
 };
 
-export const sendRotateTableRequest = async (rotateTableApiAddress, token) => {
-  const config = {
-    method: "get",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    url: `${rotateTableApiAddress}`,
-  };
-  const data = await sendApiRequest(config);
+export const sendRotateTableRequest = async (rotateTableApiAddress) => {
+  const data = await sendApiRequest(rotateTableApiAddress);
   if (!data) return null;
   const parsedData = await JSON.parse(data.data);
   return parsedData.Data.DbMainTable;
 };
 
-export const sendBackupLogFileRequest = async (backupLogApiAddress, token) => {
-  const config = {
-    method: "get",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    url: `${backupLogApiAddress}`,
-  };
-  const data = await sendApiRequest(config);
+export const sendBackupLogFileRequest = async (backupLogApiAddress) => {
+  const data = await sendApiRequest(backupLogApiAddress);
   if (!data) return null;
   const parsedData = await JSON.parse(data.data);
   return parsedData.Data.LoggerBackup;
 };
 
-export const sendReconnectLuRequest = async (reconnectLuApiAddress, token) => {
-  const config = {
-    method: "get",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    url: `${reconnectLuApiAddress}`,
-  };
-  const data = await sendApiRequest(config);
+export const sendReconnectLuRequest = async (reconnectLuApiAddress) => {
+  const data = await sendApiRequest(reconnectLuApiAddress);
   if (!data) return null;
   const parsedData = await JSON.parse(data.data);
   return parsedData.Data.ReconnectLu;
 };
 
-export const sendOpenGateRequest = async (openGateApiAddress, token) => {
-  const config = {
-    method: "get",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    url: `${openGateApiAddress}`,
-  };
-  const data = await sendApiRequest(config);
+export const sendOpenGateRequest = async (openGateApiAddress) => {
+  const data = await sendApiRequest(openGateApiAddress);
   if (!data) return null;
   const parsedData = await JSON.parse(data.data);
-  return parsedData.Data;
+  return parsedData.Data.Gate;
 };
 
-export const sendCloseGateRequest = async (closeGateApiAddress, token) => {
-  const config = {
-    method: "get",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    url: `${closeGateApiAddress}`,
-  };
-  const data = await sendApiRequest(config);
+export const sendCloseGateRequest = async (closeGateApiAddress) => {
+  const data = await sendApiRequest(closeGateApiAddress);
   if (!data) return null;
   const parsedData = await JSON.parse(data.data);
-  return parsedData.Data;
+  return parsedData.Data.Gate;
 };
 
-export const sendApiRequest = async (apiAddress, method, token, useToken) => {
+export const sendApiRequest = async (
+  apiAddress,
+  method = "GET",
+  useToken = true,
+  data = null
+) => {
   try {
-    const config = {
+    let config = {
       method: method,
-      url: `${apiAddress}`,
+      url: apiAddress,
     };
+    if (method === "POST") {
+      config.maxBodyLength = "Infinity";
+      config.headers = { "Content-Type": "application/json" };
+      config.data = data;
+    }
+    if (useToken)
+      config.headers = {
+        Authorization: `Bearer ${accessToken}`,
+      };
+    console.log(config);
     const response = await axios.request(config);
+    if (response.status === 401) return null;
     return response;
   } catch (error) {
     console.log(
