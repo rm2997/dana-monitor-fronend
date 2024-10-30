@@ -13,19 +13,18 @@ import {
 } from "@mui/material";
 
 import React, { useState } from "react";
-import {
-  setTokenToCookie,
-  setTokenToSessionStorage,
-} from "../../services/tokenService";
-import { sendLoginRequest, setAccessToken } from "../../services/apiService";
+import { setTokenToSessionStorage, sendApiRequest } from "../../services";
+import UseFetch from "../../hooks/UseFetch";
+import { ApiMaps } from "../../configs";
 
-export default function SingIn({ setToken, apiAddress }) {
+export default function SingIn({ setUser }) {
   const [userNameError, setUserNameError] = useState(false);
   const [userNameErrorMessage, setUserNameErrorMessage] = useState("");
   const [passwordError, setPasswordError] = useState(false);
   const [passwordErrorMessage, setpasswordErrorMessage] = useState("");
   const [snack, setSnack] = useState(false);
   const [snackMessage, setSnackMessage] = useState("");
+  const { loading, returnValue, fetchData } = UseFetch(ApiMaps.LoginRequest);
 
   async function validateForm() {
     const userName = document.getElementById("txtUserName");
@@ -54,28 +53,36 @@ export default function SingIn({ setToken, apiAddress }) {
 
   function handleCloseSnack() {
     setSnack(false);
-    setSnackMessage("");
   }
   async function handleSubmit(event) {
     event.preventDefault();
+    const userName = document.getElementById("txtUserName").value;
+    const userPassword = document.getElementById("txtPassword").value;
     const data = JSON.stringify({
-      userName: document.getElementById("txtUserName").value,
-      password: document.getElementById("txtPassword").value,
+      userName: userName,
+      password: userPassword,
     });
 
-    const apiResponse = await sendLoginRequest(
-      `${apiAddress}/auth/login`,
-      data
-    );
-    console.log(apiResponse);
-    if (!apiResponse || apiResponse.status > 201) {
+    await fetchData("", data);
+    console.log(returnValue);
+    // const apiResponse = await sendApiRequest("sendLoginRequest", "", data);
+
+    if (returnValue.status >= 400) {
+      setSnackMessage(`Error in fetching data, ${returnValue.error}`);
+      setSnack(true);
+      return;
+    } else if (returnValue.status > 201) {
       setSnackMessage("Incorect user name or password");
       setSnack(true);
     } else {
-      setToken(apiResponse.data.access_token);
-      setAccessToken(apiResponse.data.access_token);
-      //setTokenToCookie(apiResponse.data.access_token);
-      setTokenToSessionStorage(apiResponse.data.access_token);
+      setUser({
+        userName: userName,
+        userToken: returnValue.data.access_token,
+      });
+      setTokenToSessionStorage({
+        userName: userName,
+        userToken: returnValue.data.access_token,
+      });
     }
   }
 
@@ -172,6 +179,7 @@ export default function SingIn({ setToken, apiAddress }) {
             variant="contained"
             type="submit"
             onClick={() => validateForm()}
+            disabled={loading}
           >
             Sign in
           </Button>

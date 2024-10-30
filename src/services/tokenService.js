@@ -17,15 +17,15 @@ export const setTokenToCookie = async (token) => {
   return result;
 };
 
-export const setTokenToSessionStorage = async (token) => {
-  sessionStorage.setItem("token", token);
+export const setTokenToSessionStorage = async (user) => {
+  sessionStorage.setItem("danaMonitorUser", user);
 };
 
 export const getTokenFromSessionStorage = async () => {
-  const token = sessionStorage.getItem("token");
-  return token;
+  const user = sessionStorage.getItem("danaMonitorUser");
+  return user;
 };
 
 export const removeTokenFromSessionStorage = async () => {
-  sessionStorage.removeItem("token");
+  sessionStorage.removeItem("danaMonitorUser");
 };

@@ -117,10 +117,10 @@ export default function DrawerMenu({
   handleRefreshGateStatus,
   handleRefreshDanaStatus,
   handelSignOut,
+  user,
 }) {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
-
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -167,7 +167,7 @@ export default function DrawerMenu({
             >
               <AccountCircle />
             </IconButton>
-            <p>Profile</p>
+            <p>{user}</p>
           </MenuItem>
         </Toolbar>
       </AppBar>
