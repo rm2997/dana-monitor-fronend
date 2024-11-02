@@ -3,11 +3,11 @@ import { ApiResultModel } from "../models";
 import axios from "axios";
 import { loadConfig } from "../services";
 
-const UseFetch = (mapConfig) => {
+const useFetch = () => {
   const [loading, setLoading] = useState(false);
-  const [returnValue, setReturnValue] = useState(new ApiResultModel());
+  //   const [returnValue, setReturnValue] = useState(new ApiResultModel());
   let baseUrl = "";
-  const fetchData = async (token = "", data = null) => {
+  const fetchData = async (mapConfig, token = "", data = null) => {
     setLoading(true);
     if (baseUrl === "") {
       baseUrl = await loadConfig();
@@ -27,8 +27,8 @@ const UseFetch = (mapConfig) => {
         config.headers = {
           Authorization: `Bearer ${token}`,
         };
-      const resp = await axios.request(config);
 
+      const resp = await axios.request(config);
       try {
         retVal.data = JSON.parse(resp.data);
       } catch {
@@ -36,16 +36,18 @@ const UseFetch = (mapConfig) => {
       }
       retVal.status = resp.status;
       retVal.error = resp.statusText;
-      setReturnValue({ ...retVal });
     } catch (axiosError) {
       retVal.data = "";
-      retVal.status = axiosError.code;
+      retVal.status = axiosError.response.status;
       retVal.error = axiosError.message;
+      console.log();
     } finally {
       setLoading(false);
     }
+
+    return retVal;
   };
-  return { loading, returnValue, fetchData };
+  return { loading, fetchData };
 };
 
-export default UseFetch;
+export default useFetch;

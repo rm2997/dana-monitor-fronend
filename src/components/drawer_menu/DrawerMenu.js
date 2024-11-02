@@ -6,39 +6,31 @@ import MuiAppBar from "@mui/material/AppBar";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
-import MailIcon from "@mui/icons-material/Mail";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import {
   Toolbar,
   CssBaseline,
-  ListItem,
-  MenuItem,
-  ListItemButton,
   IconButton,
   Divider,
   Typography,
   List,
-  ListItemText,
-  Portal,
+  MenuItem,
 } from "@mui/material";
 import {
   Cable,
   DoNotDisturbOn,
-  DoNotDisturbOnOutlined,
   ElectricalServices,
+  Fence,
   LockOpen,
   Logout,
   NetworkPing,
-  OpenInBrowser,
-  Padding,
-  PaddingRounded,
   Settings,
   Traffic,
 } from "@mui/icons-material";
+import SideMenuItem from "./SideMenuItem";
+import { UserConfirmDialogModel } from "../../models";
+import UserConfirmDialog from "../dialog/UserConfirmDialog";
 
 const drawerWidth = 240;
 
@@ -121,12 +113,35 @@ export default function DrawerMenu({
 }) {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
+  const [dialogState, setDialogState] = React.useState(
+    new UserConfirmDialogModel()
+  );
+
   const handleDrawerOpen = () => {
     setOpen(true);
   };
 
   const handleDrawerClose = () => {
     setOpen(false);
+  };
+
+  const openDialog = (messageTitle, content, onConfirm) => {
+    setDialogState({
+      isOpen: true,
+      messageTitle: messageTitle,
+      content: content,
+      onConfirm: onConfirm,
+    });
+  };
+
+  const handleConfirmUserDialog = () => {
+    if (dialogState.onConfirm) {
+      dialogState.onConfirm();
+    }
+    setDialogState({ ...dialogState, isOpen: false });
+  };
+  const handleCancelUserDialog = () => {
+    setDialogState({ ...dialogState, isOpen: false });
   };
 
   return (
@@ -153,7 +168,7 @@ export default function DrawerMenu({
             ></img>
             Dana Monitor - {DanaName}
           </Typography>
-          <MenuItem>
+          <MenuItem onClick={(e) => console.log("hi")}>
             <IconButton
               size="large"
               aria-label="account of current user"
@@ -183,212 +198,74 @@ export default function DrawerMenu({
         </DrawerHeader>
         <Divider />
         <List>
-          <ListItem key="Dana" disablePadding sx={{ display: "block" }}>
-            <ListItemButton
-              sx={{
-                minHeight: 48,
-                justifyContent: open ? "initial" : "center",
-                px: 2.5,
-              }}
-            >
-              <ListItemIcon
-                sx={{
-                  minWidth: 0,
-                  mr: open ? 3 : "auto",
-                  justifyContent: "center",
-                }}
-              >
-                <RestartAltIcon />
-              </ListItemIcon>
-              <ListItemText
-                primary="Restart Dana"
-                sx={{ opacity: open ? 1 : 0 }}
-              />
-            </ListItemButton>
-            <ListItemButton
-              sx={{
-                minHeight: 48,
-                justifyContent: open ? "initial" : "center",
-                px: 2.5,
-              }}
-            >
-              <ListItemIcon
-                sx={{
-                  minWidth: 0,
-                  mr: open ? 3 : "auto",
-                  justifyContent: "center",
-                }}
-              >
-                <DoNotDisturbOn />
-              </ListItemIcon>
-              <ListItemText
-                primary="Stop Dana"
-                sx={{ opacity: open ? 1 : 0 }}
-              />
-            </ListItemButton>
-            <ListItemButton
-              sx={{
-                minHeight: 48,
-                justifyContent: open ? "initial" : "center",
-                px: 2.5,
-              }}
-            >
-              <ListItemIcon
-                sx={{
-                  minWidth: 0,
-                  mr: open ? 3 : "auto",
-                  justifyContent: "center",
-                }}
-              >
-                <Settings />
-              </ListItemIcon>
-              <ListItemText primary="Settings" sx={{ opacity: open ? 1 : 0 }} />
-            </ListItemButton>
-          </ListItem>
+          <SideMenuItem
+            itemLabel="Settings"
+            itemOpenStatus={open}
+            itemIcon={<Settings />}
+          />
+          <SideMenuItem
+            clickFunction={() =>
+              openDialog(
+                "Restart Dana Warning",
+                "Are you sure you want restart Dana service?",
+                () => console.log("Operation accepted")
+              )
+            }
+            itemLabel="Restart Dana"
+            itemOpenStatus={open}
+            itemIcon={<RestartAltIcon />}
+          />
+          <SideMenuItem
+            itemLabel="Stop Dana"
+            itemOpenStatus={open}
+            itemIcon={<DoNotDisturbOn />}
+          />
         </List>
         <Divider />
         <List>
-          <ListItem key="Host" disablePadding sx={{ display: "block" }}>
-            <ListItemButton
-              sx={{
-                minHeight: 48,
-                justifyContent: open ? "initial" : "center",
-                px: 2.5,
-              }}
-            >
-              <ListItemIcon
-                onClick={handleRefreshDanaStatus}
-                sx={{
-                  minWidth: 0,
-                  mr: open ? 3 : "auto",
-                  justifyContent: "center",
-                }}
-              >
-                <Cable />
-              </ListItemIcon>
-              <ListItemText
-                onClick={handleRefreshDanaStatus}
-                primary="Dana Status"
-                sx={{ opacity: open ? 1 : 0 }}
-              />
-            </ListItemButton>
-            <ListItemButton
-              sx={{
-                minHeight: 48,
-                justifyContent: open ? "initial" : "center",
-                px: 2.5,
-              }}
-            >
-              <ListItemIcon
-                onClick={handleRefreshPingStatus}
-                sx={{
-                  minWidth: 0,
-                  mr: open ? 3 : "auto",
-                  justifyContent: "center",
-                }}
-              >
-                <NetworkPing />
-              </ListItemIcon>
-              <ListItemText
-                onClick={handleRefreshPingStatus}
-                primary="Ping Host"
-                sx={{ opacity: open ? 1 : 0 }}
-              />
-            </ListItemButton>
-            <ListItemButton
-              sx={{
-                minHeight: 48,
-                justifyContent: open ? "initial" : "center",
-                px: 2.5,
-              }}
-            >
-              <ListItemIcon
-                onClick={handleRefreshPortStatus}
-                sx={{
-                  minWidth: 0,
-                  mr: open ? 3 : "auto",
-                  justifyContent: "center",
-                }}
-              >
-                <ElectricalServices />
-              </ListItemIcon>
-              <ListItemText
-                onClick={handleRefreshPortStatus}
-                primary="Telnet Host"
-                sx={{ opacity: open ? 1 : 0 }}
-              />
-            </ListItemButton>
-            <ListItemButton
-              sx={{
-                minHeight: 48,
-                justifyContent: open ? "initial" : "center",
-                px: 2.5,
-              }}
-            >
-              <ListItemIcon
-                onClick={handleCloseDanaGate}
-                sx={{
-                  minWidth: 0,
-                  mr: open ? 3 : "auto",
-                  justifyContent: "center",
-                }}
-              >
-                <Traffic />
-              </ListItemIcon>
-              <ListItemText
-                onClick={handleCloseDanaGate}
-                primary="Close Gate"
-                sx={{ opacity: open ? 1 : 0 }}
-              />
-            </ListItemButton>
-            <ListItemButton
-              sx={{
-                minHeight: 48,
-                justifyContent: open ? "initial" : "center",
-                px: 2.5,
-              }}
-            >
-              <ListItemIcon
-                onClick={handleOpenDanaGate}
-                sx={{
-                  minWidth: 0,
-                  mr: open ? 3 : "auto",
-                  justifyContent: "center",
-                }}
-              >
-                <LockOpen />
-              </ListItemIcon>
-              <ListItemText
-                onClick={handleOpenDanaGate}
-                primary="Open Gate"
-                sx={{ opacity: open ? 1 : 0 }}
-              />
-            </ListItemButton>
-            <Divider />
-            <ListItemButton
-              sx={{
-                minHeight: 48,
-                justifyContent: open ? "initial" : "center",
-                px: 2.5,
-              }}
-            >
-              <ListItemIcon
-                onClick={handelSignOut}
-                sx={{
-                  minWidth: 0,
-                  mr: open ? 3 : "auto",
-                  justifyContent: "center",
-                }}
-              >
-                <Logout />
-              </ListItemIcon>
-              <ListItemText
-                onClick={handelSignOut}
-                primary="Signout"
-                sx={{ opacity: open ? 1 : 0 }}
-              />
-            </ListItemButton>
-          </ListItem>
+          <SideMenuItem
+            itemLabel="Dana Status"
+            itemOpenStatus={open}
+            itemIcon={<Cable />}
+            clickFunction={handleRefreshDanaStatus}
+          />
+          <SideMenuItem
+            itemLabel="Gate Status"
+            itemOpenStatus={open}
+            itemIcon={<Fence />}
+            clickFunction={handleRefreshGateStatus}
+          />
+          <SideMenuItem
+            itemLabel="Ping Host"
+            itemOpenStatus={open}
+            itemIcon={<NetworkPing />}
+            clickFunction={handleRefreshPingStatus}
+          />
+          <SideMenuItem
+            itemLabel="Telnet Host"
+            itemOpenStatus={open}
+            itemIcon={<ElectricalServices />}
+            clickFunction={handleRefreshPortStatus}
+          />
+          <SideMenuItem
+            itemLabel="Close Gate"
+            itemOpenStatus={open}
+            itemIcon={<Traffic />}
+            clickFunction={handleCloseDanaGate}
+          />
+          <SideMenuItem
+            itemLabel="Open Gate"
+            itemOpenStatus={open}
+            itemIcon={<LockOpen />}
+            clickFunction={handleOpenDanaGate}
+          />
+          <Divider />
+          <SideMenuItem
+            itemLabel="Signout"
+            itemOpenStatus={open}
+            itemIcon={<Logout />}
+            clickFunction={handelSignOut}
+          />
         </List>
       </Drawer>
       <Box component="main" sx={{ height: "100vh", flexGrow: 1, p: 3 }}>
@@ -399,6 +276,13 @@ export default function DrawerMenu({
           ))}
         </div>
       </Box>
+      <UserConfirmDialog
+        isDialogOpen={dialogState.isOpen}
+        onConfirm={handleConfirmUserDialog}
+        handleClose={handleCancelUserDialog}
+        dialogTitle={dialogState.messageTitle}
+        dialogContentText={dialogState.content}
+      />
     </Box>
   );
 }

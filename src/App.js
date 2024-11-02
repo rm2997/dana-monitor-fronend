@@ -21,6 +21,8 @@ import {
 } from "./models";
 import StatusStepper from "./components/stepper/StatusStepper";
 import Login from "./Login";
+import { ApiMaps } from "./configs";
+import useFetch from "./hooks/UseFetch";
 
 let timer = null;
 function App() {
@@ -37,8 +39,9 @@ function App() {
   const [playing, setPlaying] = useState(false);
   const [apiUrl, setApiUrl] = useState("");
   const [apiProgress, setApiProgress] = useState(0);
-  const [apiStatus, setApiStatus] = useState(false);
+  //const [apiStatus, setApiStatus] = useState(false);
   const [apiSnackState, setApiSnackState] = useState(new ApiSnackModel());
+  const { loading, fetchData } = useFetch();
 
   useEffect(() => {
     const loadConfigFromFile = async () => {
@@ -52,7 +55,7 @@ function App() {
     const getToken = async () => {
       const tmpToken = await getTokenFromSessionStorage();
       if (apiUrl && tmpToken) {
-        setUser({ userName: tmpToken.userName, userToken: tmpToken.token });
+        setUser({ ...tmpToken });
       }
     };
     getToken();
@@ -79,48 +82,43 @@ function App() {
     };
   }, [playing]);
 
-  const getDanaStatus = async () => {
-    const resp = await sendApiRequest("sendDanaStatusRequest", user.userToken);
-    if (resp.status >= 400) {
+  const checkApiError = async (response) => {
+    if (response.status >= 400) {
       setApiSnackState({
         showSnack: true,
-        message: `Error in fetching data, ${resp.error}`,
+        message: `Error in fetching data, ${response.error}`,
         result: false,
       });
-      return;
     }
+    if (response.status == 401) {
+      handelSignOut();
+    }
+  };
 
-    if (resp.data) {
-      setDanaStatus(resp.data.Data);
+  const getDanaStatus = async () => {
+    const returnValue = await fetchData(ApiMaps.DanaStatus, user.userToken);
+    checkApiError(returnValue);
+    if (returnValue.data) {
+      setDanaStatus(returnValue.data.Data);
       const appTitle = danaStatus.BankName + "-" + danaStatus.GateWayName;
       document.title = "Dana Monitor -" + appTitle;
     } else document.title = "Dana Monitor - Disconnected";
   };
 
   const getLuStatus = async () => {
-    const resp = await sendApiRequest("sendLuStatusRequest", user.userToken);
-    if (resp.status >= 400) {
-      setApiSnackState({
-        showSnack: true,
-        message: `Error in fetching data, ${resp.error}`,
-        result: false,
-      });
-      return;
-    }
-    if (resp.data) setLuStatus(resp.data.Data);
+    //const resp = await sendApiRequest("sendLuStatusRequest", user.userToken);
+    const returnValue = await fetchData(ApiMaps.LuStatus, user.userToken);
+    checkApiError(returnValue);
+    if (returnValue.data) setLuStatus(returnValue.data.Data);
   };
 
   const getPingStatus = async () => {
-    const resp = await sendApiRequest("sendPingStatusRequest", user.userToken);
-    if (resp.status >= 400) {
-      setApiSnackState({
-        showSnack: true,
-        message: `Error in fetching data, ${resp.error}`,
-        result: false,
-      });
-    }
-    if (resp.data) {
-      setPingStatus(resp.data.Data.PingStatus);
+    //const resp = await sendApiRequest("sendPingStatusRequest", user.userToken);
+    const returnValue = await fetchData(ApiMaps.PingStatus, user.userToken);
+    checkApiError(returnValue);
+
+    if (returnValue.data) {
+      setPingStatus(returnValue.data.Data.PingStatus);
       setActiveSteps(1);
     } else {
       setPingStatus(false);
@@ -129,16 +127,11 @@ function App() {
   };
 
   const getPortStatus = async () => {
-    const resp = await sendApiRequest("sendPortStatusRequest", user.userToken);
-    if (resp.status >= 400) {
-      setApiSnackState({
-        showSnack: true,
-        message: `Error in fetching data, ${resp.error}`,
-        result: false,
-      });
-    }
-    if (resp.data) {
-      setPortStatus(resp.data.Data.PortStatus);
+    //const resp = await sendApiRequest("sendPortStatusRequest", user.userToken);
+    const returnValue = await fetchData(ApiMaps.PortStatus, user.userToken);
+    checkApiError(returnValue);
+    if (returnValue.data) {
+      setPortStatus(returnValue.data.Data.PortStatus);
       setActiveSteps(2);
     } else {
       setPortStatus(false);
@@ -147,16 +140,11 @@ function App() {
   };
 
   const getGateStatus = async () => {
-    const resp = await sendApiRequest("sendGateStatusRequest", user.userToken);
-    if (resp.status >= 400) {
-      setApiSnackState({
-        showSnack: true,
-        message: `Error in fetching data, ${resp.error}`,
-        result: false,
-      });
-    }
-    if (resp.data) {
-      setGateStatus(resp.data.Data.GateStatus);
+    //const resp = await sendApiRequest("sendGateStatusRequest", user.userToken);
+    const returnValue = await fetchData(ApiMaps.GateStatus, user.userToken);
+    checkApiError(returnValue);
+    if (returnValue.data) {
+      setGateStatus(returnValue.data.Data.GateStatus);
       setActiveSteps(4);
     } else {
       setGateStatus(false);
@@ -165,38 +153,26 @@ function App() {
   };
 
   const getResponseTimes = async () => {
-    const resp = await sendApiRequest(
-      "sendResponseTimesRequest",
-      user.userToken
-    );
-    if (resp.status >= 400) {
-      setApiSnackState({
-        showSnack: true,
-        message: `Error in fetching data, ${resp.error}`,
-        result: false,
-      });
-    }
-    if (resp.data) setResponseTimes(JSON.parse(resp.data.Data));
+    // const resp = await sendApiRequest(
+    //   "sendResponseTimesRequest",
+    //   user.userToken
+    // );
+    const returnValue = await fetchData(ApiMaps.ResponseTimes, user.userToken);
+    checkApiError(returnValue);
+    if (returnValue.data) setResponseTimes(JSON.parse(returnValue.data.Data));
   };
 
   const getTransactions = async () => {
-    const resp = await sendApiRequest(
-      "sendHostTransactionRequest",
+    const returnValue = await fetchData(
+      ApiMaps.HostTransaction,
       user.userToken
     );
-    if (resp.status >= 400) {
-      setApiSnackState({
-        showSnack: true,
-        message: `Error in fetching data, ${resp.error}`,
-        result: false,
-      });
-    }
-    if (resp.data) setTransactions(JSON.parse(resp.data.Data));
+    checkApiError(returnValue);
+    if (returnValue.data) setTransactions(JSON.parse(returnValue.data.Data));
   };
 
   const getAllEndpointsData = async (firstUse = false) => {
     if (!firstUse) setApiProgress(15);
-    setApiStatus(false);
     await getDanaStatus();
 
     if (!firstUse) setApiProgress(25);
@@ -218,7 +194,6 @@ function App() {
     await getTransactions();
 
     setApiProgress(0);
-    setApiStatus(true);
 
     if (!firstUse)
       setApiSnackState({
@@ -230,76 +205,55 @@ function App() {
 
   async function handleRefreshTransactions() {
     setApiProgress(20);
-    setApiStatus(false);
     await getTransactions();
-    setApiStatus(true);
     setApiProgress(100);
   }
 
   async function handleRefreshHostResponseTimes() {
     setApiProgress(45);
-    setApiStatus(false);
     await getResponseTimes();
-    setApiStatus(true);
     setApiProgress(100);
   }
 
   async function handleRefreshLuStatus() {
     setApiProgress(30);
-    setApiStatus(false);
     await getLuStatus();
-    setApiStatus(true);
     setApiProgress(100);
   }
 
   async function handleRefreshDanaStatus() {
     setApiProgress(45);
-    setApiStatus(false);
     await getDanaStatus();
-    setApiStatus(true);
     setApiProgress(100);
   }
 
   async function handleRefreshPortStatus() {
     setApiProgress(45);
-    setApiStatus(false);
     await getPortStatus();
-    setApiStatus(true);
     setApiProgress(100);
   }
 
   async function handleRefreshGateStatus() {
     setApiProgress(45);
-    setApiStatus(false);
     await getGateStatus();
-    setApiStatus(true);
     setApiProgress(100);
   }
 
   async function handleRefreshPingStatus() {
     setApiProgress(45);
-    setApiStatus(false);
     await getPingStatus();
-    setApiStatus(true);
     setApiProgress(100);
   }
 
   async function handleAddNewLuPack() {
     setApiProgress(45);
-    setApiStatus(false);
-    const resp = await sendApiRequest("sendAddLuPackRequest", user.userToken);
-    if (resp.status >= 400) {
-      setApiSnackState({
-        showSnack: true,
-        message: `Error in fetching data, ${resp.error}`,
-        result: false,
-      });
-    }
-    if (resp.data) {
+    const returnValue = await fetchData(ApiMaps.AddLuPack, user.userToken);
+    checkApiError(returnValue);
+    if (returnValue.data) {
       setApiSnackState({
         result: true,
         showSnack: true,
-        message: `${resp.data.Data.Lucount} LU(s) successfully added to Dana.`,
+        message: `${returnValue.data.Data.Lucount} LU(s) successfully added to Dana.`,
       });
     } else {
       setApiSnackState({
@@ -308,26 +262,20 @@ function App() {
         message: `Couldn't get data from API.`,
       });
     }
-    setApiStatus(true);
+
     setApiProgress(100);
   }
 
   async function handleCloseDanaGate() {
     setApiProgress(45);
-    setApiStatus(false);
-    const resp = await sendApiRequest("sendCloseGateRequest", user.userToken);
-    if (resp.status >= 400) {
-      setApiSnackState({
-        showSnack: true,
-        message: `Error in fetching data, ${resp.error}`,
-        result: false,
-      });
-    }
-    if (resp.data) {
+
+    const returnValue = await fetchData(ApiMaps.CloseGate, user.userToken);
+    checkApiError(returnValue);
+    if (returnValue.data) {
       setApiSnackState({
         result: true,
         showSnack: true,
-        message: `Dana open gate request successfully sent, Gate status: ${resp.data.Data.Gate}`,
+        message: `Dana open gate request successfully sent, Gate status: ${returnValue.data.Data.Gate}`,
       });
     } else {
       setApiSnackState({
@@ -336,28 +284,19 @@ function App() {
         message: `Couldn't get data from API.`,
       });
     }
-
-    setApiStatus(true);
     setApiProgress(100);
   }
 
   async function handleOpenDanaGate() {
     setApiProgress(45);
-    setApiStatus(false);
 
-    const resp = await sendApiRequest("sendOpenGateRequest", user.userToken);
-    if (resp.status >= 400) {
-      setApiSnackState({
-        showSnack: true,
-        message: `Error in fetching data, ${resp.error}`,
-        result: false,
-      });
-    }
-    if (resp.data) {
+    const returnValue = await fetchData(ApiMaps.OpenGate, user.userToken);
+    checkApiError(returnValue);
+    if (returnValue.data) {
       setApiSnackState({
         result: true,
         showSnack: true,
-        message: `Dana close gate request successfully sent, Gate status: ${resp.data.Data.Gate}`,
+        message: `Dana close gate request successfully sent, Gate status: ${returnValue.data.Data.Gate}`,
       });
     } else {
       setApiSnackState({
@@ -366,23 +305,14 @@ function App() {
         message: `Couldn't get data from API.`,
       });
     }
-    setApiStatus(true);
     setApiProgress(100);
   }
 
   async function handleReconnectLUs() {
     setApiProgress(45);
-    setApiStatus(false);
-
-    const resp = await sendApiRequest("sendReconnectLuRequest", user.userToken);
-    if (resp.status >= 400) {
-      setApiSnackState({
-        showSnack: true,
-        message: `Error in fetching data, ${resp.error}`,
-        result: false,
-      });
-    }
-    if (resp.data) {
+    const returnValue = await fetchData(ApiMaps.ReconnectLu, user.userToken);
+    checkApiError(returnValue);
+    if (returnValue.data) {
       setApiSnackState({
         result: true,
         showSnack: true,
@@ -395,23 +325,15 @@ function App() {
         message: `Couldn't get data from API.`,
       });
     }
-
-    setApiStatus(true);
     setApiProgress(100);
   }
 
   async function handleBackupDb() {
     setApiProgress(45);
-    setApiStatus(false);
-    const resp = await sendApiRequest("sendBackupDbRequest", user.userToken);
-    if (resp.status >= 400) {
-      setApiSnackState({
-        showSnack: true,
-        message: `Error in fetching data, ${resp.error}`,
-        result: false,
-      });
-    }
-    if (resp.data) {
+
+    const returnValue = await fetchData(ApiMaps.BackupDb, user.userToken);
+    checkApiError(returnValue);
+    if (returnValue.data) {
       setApiSnackState({
         result: true,
         showSnack: true,
@@ -424,23 +346,16 @@ function App() {
         message: `Couldn't get data from API.`,
       });
     }
-    setApiStatus(true);
+
     setApiProgress(100);
   }
 
   async function handleRotateTable() {
     setApiProgress(45);
-    setApiStatus(false);
 
-    const resp = await sendApiRequest("sendRotateTableRequest", user.userToken);
-    if (resp.status >= 400) {
-      setApiSnackState({
-        showSnack: true,
-        message: `Error in fetching data, ${resp.error}`,
-        result: false,
-      });
-    }
-    if (resp.data) {
+    const returnValue = await fetchData(ApiMaps.BackupDb, user.userToken);
+    checkApiError(returnValue);
+    if (returnValue.data) {
       setApiSnackState({
         result: true,
         showSnack: true,
@@ -457,20 +372,9 @@ function App() {
 
   async function handleBackupLogs() {
     setApiProgress(45);
-    setApiStatus(false);
-
-    const resp = await sendApiRequest(
-      "sendBackupLogFileRequest",
-      user.userToken
-    );
-    if (resp.status >= 400) {
-      setApiSnackState({
-        showSnack: true,
-        message: `Error in fetching data, ${resp.error}`,
-        result: false,
-      });
-    }
-    if (resp.data) {
+    const returnValue = await fetchData(ApiMaps.BackupLogFile, user.userToken);
+    checkApiError(returnValue);
+    if (returnValue.data) {
       setApiSnackState({
         result: true,
         showSnack: true,
@@ -483,8 +387,6 @@ function App() {
         message: `Couldn't get data from API.`,
       });
     }
-
-    setApiStatus(true);
     setApiProgress(100);
   }
 
@@ -520,7 +422,7 @@ function App() {
               : "Disconnected"
           }
         >
-          {apiProgress > 0 && apiStatus === false ? (
+          {apiProgress > 0 && loading ? (
             <div
               style={{
                 marginBottom: "5px",
@@ -554,14 +456,14 @@ function App() {
                   handlePlaying={() => handelPlaying(!playing)}
                   isPlaying={playing}
                   chartLable={"Host"}
-                  fetchIsActive={!apiStatus}
+                  fetchIsActive={loading}
                 />
               </div>
               <div style={{ marginBottom: "10px" }}>
                 <ResponseTimeChart
                   dataSet={responseTimes}
                   handleFetch={(e) => handleRefreshHostResponseTimes()}
-                  fetchIsActive={!apiStatus}
+                  fetchIsActive={loading}
                 />
               </div>
             </div>
@@ -577,7 +479,7 @@ function App() {
                 <MyPieChart
                   dataSet={luStatus}
                   handleFetch={(e) => handleRefreshLuStatus()}
-                  fetchIsActive={!apiStatus}
+                  fetchIsActive={loading}
                   handleGetLuPack={(e) => handleAddNewLuPack()}
                   handleReconnectLUs={(e) => handleReconnectLUs()}
                 />
@@ -587,7 +489,7 @@ function App() {
                   handleBackupDb={handleBackupDb}
                   handleBackupLogs={handleBackupLogs}
                   handleRotateTable={handleRotateTable}
-                  fetchIsActive={!apiStatus}
+                  fetchIsActive={loading}
                   memoryUsage={danaStatus.MemoryUsage}
                   cpuUsage={danaStatus.CpuUsage}
                   diskSpace={danaStatus.DiskSpace}
@@ -609,7 +511,7 @@ function App() {
             {apiSnackState.message}
           </Alert>
         </Snackbar>
-        {apiStatus === false && apiProgress === 0 ? (
+        {loading === true && apiProgress === 0 ? (
           <ApiLoading progress={apiProgress} />
         ) : (
           <></>

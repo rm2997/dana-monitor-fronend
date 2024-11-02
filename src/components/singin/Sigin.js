@@ -13,9 +13,10 @@ import {
 } from "@mui/material";
 
 import React, { useState } from "react";
-import { setTokenToSessionStorage, sendApiRequest } from "../../services";
+import { setTokenToSessionStorage } from "../../services";
 import UseFetch from "../../hooks/UseFetch";
 import { ApiMaps } from "../../configs";
+import { UserModel } from "../../models";
 
 export default function SingIn({ setUser }) {
   const [userNameError, setUserNameError] = useState(false);
@@ -24,7 +25,7 @@ export default function SingIn({ setUser }) {
   const [passwordErrorMessage, setpasswordErrorMessage] = useState("");
   const [snack, setSnack] = useState(false);
   const [snackMessage, setSnackMessage] = useState("");
-  const { loading, returnValue, fetchData } = UseFetch(ApiMaps.LoginRequest);
+  const { loading, fetchData } = UseFetch();
 
   async function validateForm() {
     const userName = document.getElementById("txtUserName");
@@ -63,9 +64,7 @@ export default function SingIn({ setUser }) {
       password: userPassword,
     });
 
-    await fetchData("", data);
-    console.log(returnValue);
-    // const apiResponse = await sendApiRequest("sendLoginRequest", "", data);
+    const returnValue = await fetchData(ApiMaps.LoginRequest, "", data);
 
     if (returnValue.status >= 400) {
       setSnackMessage(`Error in fetching data, ${returnValue.error}`);
@@ -75,14 +74,12 @@ export default function SingIn({ setUser }) {
       setSnackMessage("Incorect user name or password");
       setSnack(true);
     } else {
-      setUser({
-        userName: userName,
-        userToken: returnValue.data.access_token,
-      });
-      setTokenToSessionStorage({
-        userName: userName,
-        userToken: returnValue.data.access_token,
-      });
+      const user = new UserModel();
+      user.userName = userName;
+      user.userToken = returnValue.data.access_token;
+      console.log(user);
+      setUser(user);
+      setTokenToSessionStorage(user);
     }
   }
 
