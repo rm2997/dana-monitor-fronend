@@ -11,7 +11,6 @@ import {
   getTokenFromSessionStorage,
   removeTokenFromSessionStorage,
   loadConfig,
-  sendApiRequest,
 } from "./services";
 import {
   UserModel,
@@ -24,10 +23,9 @@ import Login from "./Login";
 import { ApiMaps } from "./configs";
 import useFetch from "./hooks/UseFetch";
 
-let timer = null;
 function App() {
   const [danaStatus, setDanaStatus] = useState(new DanaStatusModel());
-
+  const [timeProgress, setTimeProgress] = useState(1);
   const [user, setUser] = useState(new UserModel());
   const [activeSteps, setActiveSteps] = useState(0);
   const [portStatus, setPortStatus] = useState(false);
@@ -36,10 +34,9 @@ function App() {
   const [luStatus, setLuStatus] = useState(new LuStatusModel());
   const [responseTimes, setResponseTimes] = useState([]);
   const [transactions, setTransactions] = useState([]);
-  const [playing, setPlaying] = useState(false);
+  const [playing, setPlaying] = useState(true);
   const [apiUrl, setApiUrl] = useState("");
   const [apiProgress, setApiProgress] = useState(0);
-  //const [apiStatus, setApiStatus] = useState(false);
   const [apiSnackState, setApiSnackState] = useState(new ApiSnackModel());
   const { loading, fetchData } = useFetch();
 
@@ -71,18 +68,24 @@ function App() {
   }, [user]);
 
   useEffect(() => {
-    if (playing)
-      timer = setInterval(() => {
-        getAllEndpointsData();
-      }, 30000);
-    else clearTimeout(timer);
+    if (playing === false) setTimeProgress(0);
 
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [playing]);
+    if (timeProgress > 59) {
+      getAllEndpointsData();
+      setTimeProgress(0);
+    }
+  }, [playing, timeProgress]);
+
+  useEffect(() => {
+    if (danaStatus.BankName) {
+      const appTitle = danaStatus.BankName + "-" + danaStatus.GateWayName;
+      document.title = "Dana Monitor -" + appTitle;
+    } else document.title = "Dana Monitor - Disconnected";
+  }, [danaStatus]);
 
   const checkApiError = async (response) => {
+    console.log("Check Api return value:");
+    console.log(response);
     if (response.status >= 400) {
       setApiSnackState({
         showSnack: true,
@@ -90,30 +93,25 @@ function App() {
         result: false,
       });
     }
-    if (response.status == 401) {
-      handelSignOut();
+    if (response.status === 401) {
+      //handelSignOut();
+      console.log(response);
     }
   };
 
   const getDanaStatus = async () => {
     const returnValue = await fetchData(ApiMaps.DanaStatus, user.userToken);
     checkApiError(returnValue);
-    if (returnValue.data) {
-      setDanaStatus(returnValue.data.Data);
-      const appTitle = danaStatus.BankName + "-" + danaStatus.GateWayName;
-      document.title = "Dana Monitor -" + appTitle;
-    } else document.title = "Dana Monitor - Disconnected";
+    if (returnValue.data) setDanaStatus(returnValue.data.Data);
   };
 
   const getLuStatus = async () => {
-    //const resp = await sendApiRequest("sendLuStatusRequest", user.userToken);
     const returnValue = await fetchData(ApiMaps.LuStatus, user.userToken);
     checkApiError(returnValue);
     if (returnValue.data) setLuStatus(returnValue.data.Data);
   };
 
   const getPingStatus = async () => {
-    //const resp = await sendApiRequest("sendPingStatusRequest", user.userToken);
     const returnValue = await fetchData(ApiMaps.PingStatus, user.userToken);
     checkApiError(returnValue);
 
@@ -127,7 +125,6 @@ function App() {
   };
 
   const getPortStatus = async () => {
-    //const resp = await sendApiRequest("sendPortStatusRequest", user.userToken);
     const returnValue = await fetchData(ApiMaps.PortStatus, user.userToken);
     checkApiError(returnValue);
     if (returnValue.data) {
@@ -140,7 +137,6 @@ function App() {
   };
 
   const getGateStatus = async () => {
-    //const resp = await sendApiRequest("sendGateStatusRequest", user.userToken);
     const returnValue = await fetchData(ApiMaps.GateStatus, user.userToken);
     checkApiError(returnValue);
     if (returnValue.data) {
@@ -153,10 +149,6 @@ function App() {
   };
 
   const getResponseTimes = async () => {
-    // const resp = await sendApiRequest(
-    //   "sendResponseTimesRequest",
-    //   user.userToken
-    // );
     const returnValue = await fetchData(ApiMaps.ResponseTimes, user.userToken);
     checkApiError(returnValue);
     if (returnValue.data) setResponseTimes(JSON.parse(returnValue.data.Data));
@@ -192,15 +184,7 @@ function App() {
 
     if (!firstUse) setApiProgress(100);
     await getTransactions();
-
     setApiProgress(0);
-
-    if (!firstUse)
-      setApiSnackState({
-        showSnack: true,
-        message: "Getting information from API successfully compeleted",
-        result: true,
-      });
   };
 
   async function handleRefreshTransactions() {
@@ -416,11 +400,7 @@ function App() {
           handleRefreshGateStatus={() => handleRefreshGateStatus()}
           handleRefreshDanaStatus={() => handleRefreshDanaStatus()}
           handelSignOut={() => handelSignOut()}
-          DanaName={
-            danaStatus.BankName + danaStatus.GateWayName !== ""
-              ? danaStatus.BankName + "-" + danaStatus.GateWayName
-              : "Disconnected"
-          }
+          DanaName={document.title}
         >
           {apiProgress > 0 && loading ? (
             <div
@@ -457,6 +437,8 @@ function App() {
                   isPlaying={playing}
                   chartLable={"Host"}
                   fetchIsActive={loading}
+                  timeProgress={timeProgress}
+                  setTimeProgress={setTimeProgress}
                 />
               </div>
               <div style={{ marginBottom: "10px" }}>

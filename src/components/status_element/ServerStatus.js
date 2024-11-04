@@ -1,6 +1,5 @@
 import { Box, Card, IconButton, Typography } from "@mui/material";
 import React from "react";
-import MyProgressChart from "../chart/MyProgressChart";
 import {
   BackupTableSharp,
   RotateRightSharp,
@@ -60,10 +59,6 @@ export default function ServerStatus({
         <MyGaugeChart value={memoryUsage} lable="Memory usage" />
         <MyGaugeChart value={diskSpace} lable="Disk space" />
       </div>
-
-      {/* <MyProgressChart value={cpuUsage} labelName="Cpu Usage" />
-        <MyProgressChart value={memoryUsage} labelName="Memory Usage" />
-        <MyProgressChart value={diskSpace} labelName="Disk Usage" /> */}
     </Card>
   );
 }

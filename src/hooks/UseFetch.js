@@ -12,6 +12,7 @@ const useFetch = () => {
     if (baseUrl === "") {
       baseUrl = await loadConfig();
     }
+
     const retVal = new ApiResultModel();
     try {
       let config = {
@@ -40,7 +41,6 @@ const useFetch = () => {
       retVal.data = "";
       retVal.status = axiosError.response.status;
       retVal.error = axiosError.message;
-      console.log();
     } finally {
       setLoading(false);
     }

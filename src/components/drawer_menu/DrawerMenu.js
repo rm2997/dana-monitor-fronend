@@ -208,7 +208,7 @@ export default function DrawerMenu({
               openDialog(
                 "Restart Dana Warning",
                 "Are you sure you want restart Dana service?",
-                () => console.log("Operation accepted")
+                () => console.log("Restart Operation accepted")
               )
             }
             itemLabel="Restart Dana"
@@ -216,6 +216,13 @@ export default function DrawerMenu({
             itemIcon={<RestartAltIcon />}
           />
           <SideMenuItem
+            clickFunction={() =>
+              openDialog(
+                "Stop Dana Warning",
+                "Are you sure you want stop Dana service?",
+                () => console.log("Stop Dana operation accepted")
+              )
+            }
             itemLabel="Stop Dana"
             itemOpenStatus={open}
             itemIcon={<DoNotDisturbOn />}
@@ -251,7 +258,13 @@ export default function DrawerMenu({
             itemLabel="Close Gate"
             itemOpenStatus={open}
             itemIcon={<Traffic />}
-            clickFunction={handleCloseDanaGate}
+            clickFunction={() =>
+              openDialog(
+                "Close Dana Gate Warning",
+                "All the transactions will be failed, Are you sure you want close the Host gate?",
+                () => handleCloseDanaGate()
+              )
+            }
           />
           <SideMenuItem
             itemLabel="Open Gate"
@@ -264,7 +277,11 @@ export default function DrawerMenu({
             itemLabel="Signout"
             itemOpenStatus={open}
             itemIcon={<Logout />}
-            clickFunction={handelSignOut}
+            clickFunction={() =>
+              openDialog("Signout", "Are you sure you want logout?", () =>
+                handelSignOut()
+              )
+            }
           />
         </List>
       </Drawer>

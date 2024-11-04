@@ -12,7 +12,13 @@ export default function MyGaugeChart({ value, lable }) {
         margin: "auto 5px",
       }}
     >
-      <GaugeChart id={lable} percent={value / 100} nrOfLevels={20} />
+      <GaugeChart
+        id={lable}
+        percent={value / 100}
+        nrOfLevels={20}
+        textColor="red"
+        animate={false}
+      />
       <Typography
         variant="body2"
         color="text.primary"
