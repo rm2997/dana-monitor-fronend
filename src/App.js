@@ -3,9 +3,9 @@ import DrawerMenu from "./components/drawer_menu/DrawerMenu";
 import TransactionChart from "./components/chart/TransactionChart";
 import MyPieChart from "./components/chart/MyPieChart";
 import { useEffect, useState } from "react";
-import { Alert, LinearProgress, Snackbar } from "@mui/material";
+import { Alert, Box, LinearProgress, Snackbar } from "@mui/material";
 import ResponseTimeChart from "./components/chart/ResponseTimeChart";
-import ApiLoading from "./components/progress/ApiLoading";
+import FullScreenLoading from "./components/progress/FullScreenLoading";
 import ServerStatus from "./components/status_element/ServerStatus";
 import {
   getTokenFromSessionStorage,
@@ -22,6 +22,8 @@ import StatusStepper from "./components/stepper/StatusStepper";
 import Login from "./Login";
 import { ApiMaps } from "./configs";
 import useFetch from "./hooks/UseFetch";
+import TopSideLoading from "./components/progress/TopSideLoading";
+import CustomSnackbar from "./components/dialog/CustomSnackbar";
 
 function App() {
   const [danaStatus, setDanaStatus] = useState(new DanaStatusModel());
@@ -117,10 +119,8 @@ function App() {
 
     if (returnValue.data) {
       setPingStatus(returnValue.data.Data.PingStatus);
-      setActiveSteps(1);
     } else {
       setPingStatus(false);
-      setActiveSteps(0);
     }
   };
 
@@ -129,10 +129,8 @@ function App() {
     checkApiError(returnValue);
     if (returnValue.data) {
       setPortStatus(returnValue.data.Data.PortStatus);
-      setActiveSteps(2);
     } else {
       setPortStatus(false);
-      setActiveSteps(1);
     }
   };
 
@@ -141,10 +139,8 @@ function App() {
     checkApiError(returnValue);
     if (returnValue.data) {
       setGateStatus(returnValue.data.Data.GateStatus);
-      setActiveSteps(4);
     } else {
       setGateStatus(false);
-      setActiveSteps(3);
     }
   };
 
@@ -185,6 +181,11 @@ function App() {
     if (!firstUse) setApiProgress(100);
     await getTransactions();
     setApiProgress(0);
+
+    setActiveSteps(0);
+    if (pingStatus) setActiveSteps(1);
+    if (portStatus) setActiveSteps(2);
+    if (gateStatus) setActiveSteps(4);
   };
 
   async function handleRefreshTransactions() {
@@ -401,25 +402,15 @@ function App() {
           handleRefreshDanaStatus={() => handleRefreshDanaStatus()}
           handelSignOut={() => handelSignOut()}
           DanaName={document.title}
-        >
-          {apiProgress > 0 && loading ? (
-            <div
-              style={{
-                marginBottom: "5px",
-              }}
-            >
-              <LinearProgress
-                variant="determinate"
-                color="success"
-                value={apiProgress}
-              />
-            </div>
-          ) : (
-            <></>
-          )}
-          <div style={{ marginBottom: "10px" }}>
+        />
+        <Box sx={{ marginLeft: "100px", marginRight: "20px" }}>
+          <TopSideLoading
+            isShowing={apiProgress > 0 && loading}
+            progressValue={apiProgress}
+          />
+          <Box style={{ marginBottom: "10px" }}>
             <StatusStepper activeStep={activeSteps} />
-          </div>
+          </Box>
           <div style={{ display: "flex", flexDirection: "row", width: "100%" }}>
             <div
               style={{
@@ -479,25 +470,14 @@ function App() {
               </div>
             </div>
           </div>
-        </DrawerMenu>
-        <Snackbar
-          autoHideDuration={6000}
+        </Box>
+        <CustomSnackbar
           open={apiSnackState.showSnack}
-          onClose={handleCloseSnack}
-        >
-          <Alert
-            severity={apiSnackState.result ? "success" : "error"}
-            variant="filled"
-            onClose={handleCloseSnack}
-          >
-            {apiSnackState.message}
-          </Alert>
-        </Snackbar>
-        {loading === true && apiProgress === 0 ? (
-          <ApiLoading progress={apiProgress} />
-        ) : (
-          <></>
-        )}
+          closeSnackFunc={handleCloseSnack}
+          state={apiSnackState.result}
+          message={apiSnackState.message}
+        />
+        <FullScreenLoading isShowing={loading === true && apiProgress === 0} />
       </MainArea>
     );
 }

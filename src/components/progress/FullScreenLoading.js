@@ -3,14 +3,14 @@ import Backdrop from "@mui/material/Backdrop";
 import CircularProgress from "@mui/material/CircularProgress";
 import { Typography } from "@mui/material";
 
-export default function ApiLoading() {
+export default function FullScreenLoading({ isShowing }) {
   const [open, setOpen] = React.useState(true);
   const handleClose = () => {
     setOpen(false);
   };
 
   return (
-    <div>
+    isShowing && (
       <Backdrop
         sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={open}
@@ -19,6 +19,6 @@ export default function ApiLoading() {
         <Typography variant="h4">Loading, Please wait...</Typography>
         <CircularProgress color="inherit" />
       </Backdrop>
-    </div>
+    )
   );
 }

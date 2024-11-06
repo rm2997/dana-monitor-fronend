@@ -10,9 +10,9 @@ import StepConnector, {
   stepConnectorClasses,
 } from "@mui/material/StepConnector";
 import {
-  ElectricalServicesSharp,
   MiscellaneousServicesSharp,
   NetworkPingOutlined,
+  PowerOutlined,
   TrafficOutlined,
 } from "@mui/icons-material";
 import { Box, Card, Typography } from "@mui/material";
@@ -136,7 +136,7 @@ function ColorlibStepIcon(props) {
 
   const icons = {
     1: <NetworkPingOutlined />,
-    2: <ElectricalServicesSharp />,
+    2: <PowerOutlined />,
     3: <MiscellaneousServicesSharp />,
     4: <TrafficOutlined />,
   };

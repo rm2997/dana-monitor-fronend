@@ -22,7 +22,7 @@
     "node-polyfill-webpack-plugin": "^3.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-gauge-chart": "^0.5.1",
+    "react-gauge-component": "^1.2.6",
     "react-scripts": "5.0.1",
     "styled-components": "^6.1.13",
     "web-vitals": "^2.1.4"

@@ -3,7 +3,7 @@ import Box from "@mui/material/Box";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { Card, CircularProgress, IconButton, Typography } from "@mui/material";
 import LoopSharpIcon from "@mui/icons-material/LoopSharp";
-import { Pause, PlayArrow } from "@mui/icons-material";
+import { AccessTimeOutlined, TimerOutlined } from "@mui/icons-material";
 
 export default function TransactionChart({
   dataSet,
@@ -83,7 +83,7 @@ export default function TransactionChart({
             color="primary"
             title="Auto refresh Start|Pause"
           >
-            {isPlaying ? <Pause /> : <PlayArrow />}
+            {isPlaying ? <AccessTimeOutlined /> : <TimerOutlined />}
             {isPlaying && (
               <CircularProgress
                 variant="determinate"
@@ -92,8 +92,7 @@ export default function TransactionChart({
                 size={30}
                 sx={{
                   position: "absolute",
-                  top: "12%",
-                  left: "12%",
+
                   /*marginTop: -34,
                   marginLeft: -34,*/
                 }}

@@ -1,6 +1,6 @@
 import { Typography } from "@mui/material";
 import React from "react";
-import GaugeChart from "react-gauge-chart";
+import GaugeComponent from "react-gauge-component";
 
 export default function MyGaugeChart({ value, lable }) {
   return (
@@ -12,19 +12,54 @@ export default function MyGaugeChart({ value, lable }) {
         margin: "auto 5px",
       }}
     >
-      <GaugeChart
+      <GaugeComponent
         id={lable}
-        percent={value / 100}
-        nrOfLevels={20}
-        textColor="red"
-        animate={false}
+        type="semicircle"
+        value={value}
+        maxValue={100}
+        pointer={{
+          animate: true,
+          elastic: true,
+          type: "arrow",
+          baseColor: "yellow",
+          width: 15,
+        }}
+        arc={{
+          gradient: true,
+          padding: 0,
+          width: 0.15,
+          subArcs: [
+            {
+              limit: 25,
+              color: "#5BE12C",
+              showTick: false,
+            },
+            {
+              limit: 50,
+              color: "#F5CD19",
+              showTick: true,
+            },
+            {
+              limit: 75,
+              color: "#F58B19",
+              showTick: false,
+            },
+            {
+              limit: 100,
+              color: "#EA4228",
+              showTick: true,
+            },
+          ],
+        }}
       />
       <Typography
         variant="body2"
         color="text.primary"
         textAlign="center"
-        sx={{ margin: "5px" }}
-      >{`${lable} ${Math.round(value)}%`}</Typography>
+        sx={{ margin: "1px" }}
+      >
+        {lable}
+      </Typography>
     </div>
   );
 }
